@@ -1,6 +1,11 @@
-﻿namespace MyApp.Infrastructure.Repos.Interfaces;
+﻿using MyApp.Domain.Entities;
 
-public class IProductRepository
+namespace MyApp.Infrastructure.Repos.Interfaces;
+
+public interface IProductRepository
 {
-    
+    Task<Product> CreateAsync(Product product);
+    Task<Product?> GetByIdAsync(Guid id);
+    Task<IEnumerable<Product>> GetAllAsync();
+
 }

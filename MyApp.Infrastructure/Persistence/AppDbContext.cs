@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using MyApp.Application.Interfaces.Persistence;
 using MyApp.Domain.Entities;
 
 namespace MyApp.Infrastructure.Persistence;
 
-public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
+public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>, IAppDbContext
 {
     public DbSet<Product> Products { get; set; } = null!;
     public AppDbContext(DbContextOptions<AppDbContext> options)
