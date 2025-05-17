@@ -33,7 +33,11 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<MyApp.Domain.Entities.AppUser>>();
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    
     await DbSeeder.SeedRolesAsync(roleManager);
+    await DbSeeder.SeedDataAsync(context, userManager);
 }
 
 app.UseSwagger();
