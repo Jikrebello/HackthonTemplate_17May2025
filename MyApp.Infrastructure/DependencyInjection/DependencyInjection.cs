@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MyApp.Application;
 using MyApp.Application.Interfaces.Repositories;
 using MyApp.Application.Interfaces.Services;
 using MyApp.Application.Services;

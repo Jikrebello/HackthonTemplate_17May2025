@@ -1,10 +1,8 @@
-using MyApp.Application.Interfaces.Services;
 using MyApp.Application.Interfaces.Repositories;
 using MyApp.Common.DTOs.Product;
 using MyApp.Domain.Entities;
-using System.Collections.Generic;
 
-namespace MyApp.Application.Services;
+namespace MyApp.Application;
 
 public class ProductService : IProductService
 {

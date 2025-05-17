@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyApp.Application;
 using MyApp.Application.Interfaces.Services;
 using MyApp.Common.DTOs.Product;
 
