@@ -13,6 +13,7 @@ public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
     public DbSet<Inventory> Inventories { get; set; } = null!;
     public DbSet<ProductProfit> ProductProfits { get; set; } = null!;
     public DbSet<ProductPurchese> ProductPurcheses { get; set; } = null!;
+    public DbSet<ProductAudit> ProductAudits { get; set; } = null!;
     
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
@@ -39,6 +40,8 @@ public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
         builder.Entity<ProductPurchese>()
             .HasKey(pp => pp.Id);
         
+        builder.Entity<ProductAudit>()
+            .HasKey(pa => pa.Id);
             
         builder.Entity<Product>()
             .HasOne(p => p.Inventory)
