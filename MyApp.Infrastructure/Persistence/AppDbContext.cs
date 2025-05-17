@@ -9,6 +9,8 @@ namespace MyApp.Infrastructure.Persistence;
 public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
 {
     public DbSet<Product> Products { get; set; } = null!;
+    public DbSet<UserPermission> UserPermissions { get; set; } = null!;
+    public DbSet<Category> Categories { get; set; } = null!;
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
     
@@ -22,5 +24,4 @@ public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 
-    public DbSet<Category> Categories { get; set; }
 }
