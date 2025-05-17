@@ -1,0 +1,145 @@
+﻿@page "/manage-users"
+@attribute [Authorize]
+@using Blazored.LocalStorage
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject ILocalStorageService LocalStorage
+
+<h3>Manage Users</h3>
+
+<div class="d-flex justify-content-between align-items-start">
+    <div class="flex-grow-1">
+        <table class="table table-bordered table-hover table-lg custom-table">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 50px;">Default</th>
+                    <th style="width: 250px;">Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < users.Count; i++)
+                {
+                    var user = users[i];
+                    var rowClass = i % 2 == 0 ? "even-row" : "odd-row";
+                    <tr class="@rowClass @(selectedUser == user ? "table-active" : "")"
+                        @onclick="() => SelectUser(user)"
+                        style="cursor:pointer;">
+                        <td class="align-middle text-center" @onclick:stopPropagation>
+                            <input type="checkbox"
+                                   checked="@user.IsDefault"
+                                   @onchange="() => SetDefaultUser(user)" />
+                        </td>
+                        <td class="align-middle">@user.Name</td>
+                        <td class="align-middle">@user.Description</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="ms-4" style="min-width: 220px; position: fixed; right: 60px; top: 120px;">
+        <div class="d-flex flex-column align-items-stretch gap-3">
+            <button class="btn btn-primary custom-btn btn-lg py-4" @onclick="AddUser">Add User</button><br />
+            <button class="btn btn-secondary custom-btn btn-lg py-4" @onclick="EditUser" disabled="@(!CanEdit)">Edit User</button><br />
+            <button class="btn btn-danger custom-btn btn-lg py-4" @onclick="DeleteUser" disabled="@(!CanEdit)">Delete User</button>
+        </div>
+    </div>
+
+    <style>
+        .custom-btn {
+            min-width: 220px;
+            min-height: 56px;
+            font-size: 1.15rem;
+            font-weight: 500;
+            margin-bottom: 0 !important;
+        }
+
+        .d-flex.flex-column.gap-3 > .custom-btn:not(:last-child) {
+            margin-bottom: 1rem !important;
+        }
+    </style>
+</div>
+
+<style>
+    .custom-table {
+        min-width: 700px;
+        font-size: 1.1rem;
+        border-collapse: separate;
+        border-spacing: 0;
+        background-color: #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+        .custom-table th, .custom-table td {
+            border: 1px solid #dee2e6 !important;
+            padding: 1rem 1.25rem;
+        }
+
+        .custom-table thead th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .custom-table tbody tr:hover {
+            background-color: #f1f3f5;
+        }
+
+        .custom-table .even-row {
+            background-color: #ffffff;
+        }
+
+        .custom-table .odd-row {
+            background-color: #f6f8fa;
+        }
+
+    .table-active {
+        background-color: #e2e6ea !important;
+    }
+</style>
+
+@code
+{
+    private List<UserDto> users = new()
+    {
+        new UserDto { Username = "admin", Name = "Administrator", Role = "Admin", Description = "System administrator", IsDefault = true },
+        new UserDto { Username = "john", Name = "John Doe", Role = "User", Description = "Regular user" },
+        new UserDto { Username = "jane", Name = "Jane Smith", Role = "User", Description = "Account manager" },
+        new UserDto { Username = "support", Name = "Support Agent", Role = "Support", Description = "Customer support rep" },
+        new UserDto { Username = "dev", Name = "Developer", Role = "Developer", Description = "Software engineer" },
+        new UserDto { Username = "intern", Name = "Intern Guy", Role = "Intern", Description = "Temporary intern" }
+    };
+
+    private UserDto? selectedUser;
+
+    private bool CanEdit => selectedUser is not null;
+
+    private void SelectUser(UserDto user)
+    {
+        selectedUser = user;
+    }
+
+    private void SetDefaultUser(UserDto user)
+    {
+        foreach (var u in users)
+        {
+            u.IsDefault = false;
+        }
+
+        user.IsDefault = true;
+    }
+
+    private void AddUser() => Console.WriteLine("Add user clicked");
+    private void EditUser() => Console.WriteLine($"Edit user: {selectedUser?.Username}");
+    private void DeleteUser() => Console.WriteLine($"Delete user: {selectedUser?.Username}");
+
+    public class UserDto
+    {
+        public string Username { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Role { get; set; } = "";
+        public string Description { get; set; } = "";
+        public bool IsDefault { get; set; }
+    }
+}

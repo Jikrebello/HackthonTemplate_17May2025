@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MyApp.Common.DTOs.Auth;
+namespace MyApp.Common.DTOs.User;
 
-public class RegisterRequest
+public class CreateUserRequest
 {
     [Required]
     public string UserName { get; set; } = string.Empty;

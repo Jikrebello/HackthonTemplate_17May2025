@@ -175,6 +175,14 @@ namespace MyApp.Infrastructure.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
 
@@ -197,10 +205,6 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
@@ -290,6 +294,10 @@ namespace MyApp.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid?>("CategoryId")
                         .HasColumnType("uuid");
 
@@ -326,6 +334,43 @@ namespace MyApp.Infrastructure.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("MyApp.Domain.Entities.ProductAudit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FieldName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("NewValue")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OldValue")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProductAudits");
+                });
+
             modelBuilder.Entity("MyApp.Domain.Entities.ProductProfit", b =>
                 {
                     b.Property<Guid>("Id")
@@ -338,11 +383,11 @@ namespace MyApp.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("PeriodEnd")
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("PeriodStart")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
@@ -352,18 +397,6 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.Property<decimal>("SellingPrice")
                         .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalCost")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalProfit")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalRevenue")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("TotalUnitsSold")
-                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -376,14 +409,34 @@ namespace MyApp.Infrastructure.Migrations
                     b.ToTable("ProductProfits");
                 });
 
-            modelBuilder.Entity("MyApp.Domain.Entities.Purchase", b =>
+            modelBuilder.Entity("MyApp.Domain.Entities.ProductPurchese", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<decimal>("PricePerUnit")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PurcheseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProductPurcheses");
+                });
+
+            modelBuilder.Entity("MyApp.Domain.Entities.Purchase", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -394,14 +447,8 @@ namespace MyApp.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<decimal>("PricePerUnit")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid>("ProductId")
+                    b.Property<Guid?>("ProductId")
                         .HasColumnType("uuid");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -412,14 +459,9 @@ namespace MyApp.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Purchases");
                 });
@@ -508,21 +550,9 @@ namespace MyApp.Infrastructure.Migrations
 
             modelBuilder.Entity("MyApp.Domain.Entities.Purchase", b =>
                 {
-                    b.HasOne("MyApp.Domain.Entities.Product", "Product")
+                    b.HasOne("MyApp.Domain.Entities.Product", null)
                         .WithMany("Purchases")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MyApp.Domain.Entities.AppUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("User");
+                        .HasForeignKey("ProductId");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.Product", b =>

@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MyApp.Application;
 using MyApp.Application.Interfaces.Services;
 using MyApp.Common.DTOs.Product;
 
@@ -73,7 +71,6 @@ public class ProductController : ControllerBase
         return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
     }
     
-    
     [HttpPatch("{id:guid}/quantity")]
     public async Task<ActionResult<ProductResponse>> UpdateProductQuantity(Guid id, UpdateQuantityRequest request)
     {
@@ -86,8 +83,8 @@ public class ProductController : ControllerBase
             return NotFound();
             
         return Ok(product);
-    }
-    
+    }    
+ 
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteProduct(Guid id)
     {
@@ -100,8 +97,8 @@ public class ProductController : ControllerBase
             return NotFound();
             
         return Ok();
-    }
-    
+    }   
+
     [HttpPut()]
     public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductRequest request)
     {

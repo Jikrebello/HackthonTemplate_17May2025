@@ -27,8 +27,11 @@ public class AuthService : IAuthService
         {
             UserName = request.UserName,
             Email = request.Email,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
             CreatedAt = DateTime.UtcNow,
-            Role = "User",
+            // Commented out for now to fix migration issues
+            // Permissions = new List<UserPermission>(),
         };
 
         var result = await _userManager.CreateAsync(user, request.Password);
@@ -37,9 +40,7 @@ public class AuthService : IAuthService
         {
             throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
         }
-
-        await _userManager.AddToRoleAsync(user, "User");
-
+        
         return await GenerateJwt(user);
     }
 
@@ -59,15 +60,28 @@ public class AuthService : IAuthService
 
     private async Task<AuthResponse> GenerateJwt(AppUser user)
     {
-        var roles = await _userManager.GetRolesAsync(user);
-
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.UniqueName, user.UserName ?? ""),
-            new(ClaimTypes.Role, roles.FirstOrDefault() ?? "User"),
+            new(ClaimTypes.GivenName, user.FirstName),
+            new(ClaimTypes.Surname, user.LastName),
         };
-
+        
+        // Commented out for now to fix migration issues
+        /*
+        // Add permissions as claims and collect for response
+        var permissions = new List<Permission>();
+        foreach (var permission in user.Permissions)
+        {
+            // Try to parse the permission name to our enum
+            if (Enum.TryParse<Permission>(permission.PermissionName, out var permissionEnum))
+            {
+                claims.Add(new Claim("permission", permissionEnum.ToString()));
+                permissions.Add(permissionEnum);
+            }
+        }
+        */
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -83,7 +97,6 @@ public class AuthService : IAuthService
         {
             Token = new JwtSecurityTokenHandler().WriteToken(token),
             UserName = user.UserName!,
-            Role = roles.FirstOrDefault() ?? "User",
         };
     }
 }
