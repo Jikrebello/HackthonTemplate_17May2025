@@ -26,6 +26,7 @@ public class ProductService : IProductService
             Description = request.Description,
             Price = request.Price,
             Quantity = request.Quantity,
+            Barcode = GenerateBarcode(), // Temp solution for barcode generation
             CategoryId = request.CategoryId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -39,7 +40,7 @@ public class ProductService : IProductService
             ProductId = product.Id,
             Action = "Create",
             FieldName = "All",
-            NewValue = $"Name: {product.Name}, Price: {product.Price}, Quantity: {product.Quantity}"
+            NewValue = $"Name: {product.Name}, Price: {product.Price}, Quantity: {product.Quantity}, Barcode: {product.Barcode}"
         });
     
         return MapToResponse(product);
@@ -94,7 +95,7 @@ public class ProductService : IProductService
                 ProductId = id,
                 Action = "Delete",
                 FieldName = "All",
-                OldValue = $"Name: {product.Name}, Price: {product.Price}, Quantity: {product.Quantity}"
+                OldValue = $"Name: {product.Name}, Price: {product.Price}, Quantity: {product.Quantity}, Barcode: {product.Barcode}"
             });
         }
         
@@ -122,12 +123,14 @@ public class ProductService : IProductService
             Description = existingProduct.Description,
             Price = existingProduct.Price,
             Quantity = existingProduct.Quantity,
+            Barcode = existingProduct.Barcode,
             CategoryId = existingProduct.CategoryId
         };
             
         existingProduct.Name = request.Name;
         existingProduct.Description = request.Description;
         existingProduct.Price = request.Price;
+        existingProduct.Barcode = request.Barcode;
         // existingProduct.Quantity = request.Quantity;
         // existingProduct.CategoryId = request.CategoryId;
         existingProduct.UpdatedAt = DateTime.UtcNow;
@@ -140,6 +143,18 @@ public class ProductService : IProductService
         return updatedProduct != null ? MapToResponse(updatedProduct) : null;
     }
     
+    private static string GenerateBarcode()
+    {
+        // Generate a random 12-digit barcode
+        Random random = new Random();
+        string barcode = string.Empty;
+        for (int i = 0; i < 5; i++)
+        {
+            barcode += random.Next(0, 10).ToString();
+        }
+        return barcode;
+    }
+    
     private static ProductResponse MapToResponse(Product product)
     {
         return new ProductResponse
@@ -149,6 +164,7 @@ public class ProductService : IProductService
             Description = product.Description,
             Price = product.Price,
             Quantity = product.Quantity,
+            Barcode = product.Barcode,
             CategoryId = product.CategoryId,
             CreatedAt = product.CreatedAt,
             UpdatedAt = product.UpdatedAt
@@ -164,6 +180,7 @@ public class ProductService : IProductService
             Description = product.Description,
             Price = product.Price,
             Quantity = product.Quantity,
+            Barcode = product.Barcode,
             CategoryId = product.CategoryId,
             CreatedAt = product.CreatedAt,
             UpdatedAt = product.UpdatedAt
