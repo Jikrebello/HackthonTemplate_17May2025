@@ -34,6 +34,10 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
+        // Register repositories
+        services.AddScoped<MyApp.Infrastructure.Repos.Interfaces.IProductRepository, MyApp.Infrastructure.Repos.Services.ProductRepository>();
+        
+        // Register services
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProductService, ProductService>();
 

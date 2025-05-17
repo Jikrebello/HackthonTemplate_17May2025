@@ -10,6 +10,12 @@
 	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Compile Update="Persistence\ProductRepository.cs">
+	    <DependentUpon>IProductRepository.cs</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
