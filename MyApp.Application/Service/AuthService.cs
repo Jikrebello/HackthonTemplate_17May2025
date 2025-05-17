@@ -31,7 +31,8 @@ public class AuthService : IAuthService
             FirstName = request.FirstName,
             LastName = request.LastName,
             CreatedAt = DateTime.UtcNow,
-            Permissions = new List<UserPermission>(),
+            // Commented out for now to fix migration issues
+            // Permissions = new List<UserPermission>(),
         };
 
         var result = await _userManager.CreateAsync(user, request.Password);
@@ -83,6 +84,8 @@ public class AuthService : IAuthService
             new(ClaimTypes.Surname, user.LastName),
         };
         
+        // Commented out for now to fix migration issues
+        /*
         // Add permissions as claims and collect for response
         var permissions = new List<Permission>();
         foreach (var permission in user.Permissions)
@@ -94,6 +97,8 @@ public class AuthService : IAuthService
                 permissions.Add(permissionEnum);
             }
         }
+        */
+        var permissions = new List<Permission>();
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

@@ -9,5 +9,6 @@ public class AppUser : IdentityUser<Guid>
     public string Role { get; set; } = "User";
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
-    public virtual ICollection<UserPermission> Permissions { get; set; } = new List<UserPermission>();
+    // Commented out for now to fix migration issues
+    // public virtual ICollection<UserPermission> Permissions { get; set; } = new List<UserPermission>();
 }
