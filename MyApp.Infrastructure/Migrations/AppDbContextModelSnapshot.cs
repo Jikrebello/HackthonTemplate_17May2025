@@ -333,15 +333,13 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.ToTable("Products");
                 });
-
-            modelBuilder.Entity("MyApp.Domain.Entities.UserPermission", b =>
+            
             modelBuilder.Entity("MyApp.Domain.Entities.ProductAudit", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<string>("PermissionName")
+                   
                     b.Property<string>("Action")
                         .IsRequired()
                         .HasColumnType("text");

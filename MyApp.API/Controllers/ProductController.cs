@@ -76,10 +76,6 @@ public class ProductController : ControllerBase
         return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
     }
     
-    [HttpPut("{id:guid}")]
-    [RequirePermission(Permission.ProductManager)]
-    public async Task<ActionResult<ProductResponse>> UpdateProduct(Guid id, UpdateProductRequest request)
-    
     [HttpPatch("{id:guid}/quantity")]
     public async Task<ActionResult<ProductResponse>> UpdateProductQuantity(Guid id, UpdateQuantityRequest request)
     {
@@ -92,11 +88,8 @@ public class ProductController : ControllerBase
             return NotFound();
             
         return Ok(product);
-    }
-    
-    [HttpPatch("{id:guid}/quantity")]
-    [RequirePermission(Permission.ProductManager)]
-    public async Task<ActionResult<ProductResponse>> UpdateProductQuantity(Guid id, UpdateQuantityRequest request)
+    }    
+ 
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteProduct(Guid id)
     {
@@ -109,11 +102,8 @@ public class ProductController : ControllerBase
             return NotFound();
             
         return Ok();
-    }
-    
-    [HttpDelete("{id:guid}")]
-    [RequirePermission(Permission.ProductManager)]
-    public async Task<ActionResult> DeleteProduct(Guid id)
+    }   
+
     [HttpPut()]
     public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductRequest request)
     {
