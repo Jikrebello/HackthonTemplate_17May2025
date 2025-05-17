@@ -4,15 +4,15 @@
     <nav class="sitenav" aria-labelledby="main-menu">
         <FluentNavMenu Id="main-menu" Width="250" Collapsible="true" Title="Navigation menu" @bind-Expanded="expanded" CustomToggle="true">
             <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
-            <FluentNavLink Href="counter" Icon="@(new Icons.Regular.Size20.NumberSymbolSquare())" IconColor="Color.Accent">Counter</FluentNavLink>
-            <FluentNavLink Href="weather" Icon="@(new Icons.Regular.Size20.WeatherPartlyCloudyDay())" IconColor="Color.Accent">Weather</FluentNavLink>
             <FluentNavLink Href="scan-items" Icon="@(new Icons.Regular.Size20.BarcodeScanner())" IconColor="Color.Accent">Scan Items</FluentNavLink>
             <FluentNavLink Href="manage-item-catagories" Icon="@(new Icons.Regular.Size20.TrayItemAdd())" IconColor="Color.Accent">Manage Item Catagories</FluentNavLink>
+            <FluentNavLink Href="manage-users" Icon="@(new Icons.Regular.Size20.PersonAccounts())" IconColor="Color.Accent">Manage Users</FluentNavLink>
             <FluentNavLink Href="inventory" Icon="@(new Icons.Regular.Size20.List())" IconColor="Color.Accent">Manage Inventory</FluentNavLink>
         </FluentNavMenu>
     </nav>
 </div>
 
-@code {
+@code
+{
     private bool expanded = true;
 }

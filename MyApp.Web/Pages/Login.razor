@@ -62,7 +62,6 @@
                 {
                     await LocalStorage.SetItemAsync("authToken", result.Token);
 
-                    // 🔥 Notify the AuthProvider
                     if (AuthProvider is CustomAuthStateProvider customProvider)
                     {
                         customProvider.NotifyUserAuthentication(result.Token);
