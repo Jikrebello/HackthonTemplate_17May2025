@@ -1,4 +1,5 @@
 using MyApp.Application.Interfaces.Repositories;
+using MyApp.Application.Interfaces.Services;
 using MyApp.Common.DTOs.Product;
 using MyApp.Domain.Entities;
 
@@ -12,7 +13,8 @@ public class ProductService : IProductService
     {
         _productRepository = productRepository;
     }
-    
+
+
     public async Task<ProductResponse> CreateProductAsync(CreateProductRequest request)
     {
         var product = new Product
@@ -30,37 +32,21 @@ public class ProductService : IProductService
         await _productRepository.CreateAsync(product);
     
         return MapToResponse(product);
+
     }
-    
+
     public async Task<ProductResponse?> GetProductByIdAsync(Guid id)
     {
         var product = await _productRepository.GetByIdAsync(id);
         return product != null ? MapToResponse(product) : null;
     }
-    
+
     public async Task<IEnumerable<ProductResponse>> GetAllProductsAsync()
     {
         var products = await _productRepository.GetAllAsync();
         return products.Select(MapToResponse);
     }
-    
-    public async Task<ProductResponse?> UpdateProductAsync(Guid id, UpdateProductRequest request)
-    {
-        var existingProduct = await _productRepository.GetByIdAsync(id);
-        if (existingProduct == null)
-            return null;
-            
-        existingProduct.Name = request.Name;
-        existingProduct.Description = request.Description;
-        existingProduct.Price = request.Price;
-        existingProduct.Quantity = request.Quantity;
-        existingProduct.CategoryId = request.CategoryId;
-        existingProduct.UpdatedAt = DateTime.UtcNow;
-        
-        var updatedProduct = await _productRepository.UpdateAsync(existingProduct);
-        return updatedProduct != null ? MapToResponse(updatedProduct) : null;
-    }
-    
+
     public async Task<ProductResponse?> UpdateProductQuantityAsync(Guid id, UpdateQuantityRequest request)
     {
         var existingProduct = await _productRepository.GetByIdAsync(id);
@@ -72,19 +58,37 @@ public class ProductService : IProductService
         
         var updatedProduct = await _productRepository.UpdateAsync(existingProduct);
         return updatedProduct != null ? MapToResponse(updatedProduct) : null;
+
     }
-    
+
     public async Task<bool> DeleteProductAsync(Guid id)
     {
         return await _productRepository.DeleteAsync(id);
+
     }
-    
+
     public async Task<IEnumerable<ProductResponse>> GetProductsByCategoryAsync(Guid categoryId)
     {
-        var products = await _productRepository.GetAllAsync();
-        return products
-            .Where(p => p.CategoryId == categoryId)
-            .Select(MapToResponse);
+        var products = await _productRepository.GetByCategoryAsync(categoryId);
+
+        return MapToResponseList(products).ToList();
+    }
+
+    public async Task<ProductResponse> UpdateProductAsync(UpdateProductRequest request)
+    {
+        var existingProduct = await _productRepository.GetByIdAsync(request.Id);
+        if (existingProduct == null)
+            return null;
+            
+        existingProduct.Name = request.Name;
+        existingProduct.Description = request.Description;
+        existingProduct.Price = request.Price;
+        // existingProduct.Quantity = request.Quantity;
+        // existingProduct.CategoryId = request.CategoryId;
+        existingProduct.UpdatedAt = DateTime.UtcNow;
+        
+        var updatedProduct = await _productRepository.UpdateAsync(existingProduct);
+        return updatedProduct != null ? MapToResponse(updatedProduct) : null;
     }
     
     private static ProductResponse MapToResponse(Product product)
@@ -100,5 +104,20 @@ public class ProductService : IProductService
             CreatedAt = product.CreatedAt,
             UpdatedAt = product.UpdatedAt
         };
+    }
+    
+    private static IEnumerable<ProductResponse> MapToResponseList(IEnumerable<Product> products)
+    {
+        return products.Select(product => new ProductResponse
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            Price = product.Price,
+            Quantity = product.Quantity,
+            CategoryId = product.CategoryId,
+            CreatedAt = product.CreatedAt,
+            UpdatedAt = product.UpdatedAt
+        });
     }
 }

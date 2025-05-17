@@ -52,19 +52,6 @@ public class ProductController : ControllerBase
         return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
     }
     
-    [HttpPut("{id:guid}")]
-    public async Task<ActionResult<ProductResponse>> UpdateProduct(Guid id, UpdateProductRequest request)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-            
-        var product = await _productService.UpdateProductAsync(id, request);
-        
-        if (product == null)
-            return NotFound();
-            
-        return Ok(product);
-    }
     
     [HttpPatch("{id:guid}/quantity")]
     public async Task<ActionResult<ProductResponse>> UpdateProductQuantity(Guid id, UpdateQuantityRequest request)
@@ -89,5 +76,12 @@ public class ProductController : ControllerBase
             return NotFound();
             
         return NoContent();
+    }
+    
+    [HttpPut()]
+    public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductRequest request)
+    {
+        var response = await _productService.UpdateProductAsync(request);
+        return Ok(response);
     }
 }
