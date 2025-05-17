@@ -1,21 +1,40 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Interfaces.Services;
+using MyApp.Common.DTOs.Auth;
 using MyApp.Common.DTOs.User;
 
 namespace MyApp.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UserController : ControllerBase
+public class UserAuthController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly IAuthService _authService;
 
-    public UserController(IUserService userService)
+    public UserAuthController(IUserService userService, IAuthService authService)
     {
         _userService = userService;
+        _authService = authService;
     }
 
+    // Authentication endpoints
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    {
+        var response = await _authService.RegisterAsync(request);
+        return Ok(response);
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        var response = await _authService.LoginAsync(request);
+        return Ok(response);
+    }
+
+    // User management endpoints
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UserResponse>>> GetAllUsers()
     {
@@ -46,16 +65,6 @@ public class UserController : ControllerBase
         return Ok(user);
     }
 
-    [HttpPost]
-    public async Task<ActionResult<UserResponse>> CreateUser(CreateUserRequest request)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-            
-        var user = await _userService.CreateUserAsync(request);
-        return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
-    }
-
     [HttpPut("{id:guid}")]
     [Authorize]
     public async Task<ActionResult<UserResponse>> UpdateUser(Guid id, UpdateUserRequest request)
@@ -77,7 +86,7 @@ public class UserController : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-
+        
         var result = await _userService.UpdatePasswordAsync(id, request);
         
         if (!result)

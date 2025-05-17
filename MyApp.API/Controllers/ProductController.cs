@@ -1,9 +1,5 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MyApp.API.Authorization;
-using MyApp.Application;
 using MyApp.Application.Interfaces.Services;
-using MyApp.Common.Constants;
 using MyApp.Common.DTOs.Product;
 
 namespace MyApp.API.Controllers;
@@ -66,7 +62,6 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost]
-    [RequirePermission(Permission.ProductManager)]
     public async Task<ActionResult<ProductResponse>> CreateProduct(CreateProductRequest request)
     {
         if (!ModelState.IsValid)
