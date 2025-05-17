@@ -1,6 +1,6 @@
 ﻿using MyApp.Domain.Entities;
 
-namespace MyApp.Infrastructure.Repos.Interfaces;
+namespace MyApp.Application.Repo;
 
 public interface IProductRepository
 {

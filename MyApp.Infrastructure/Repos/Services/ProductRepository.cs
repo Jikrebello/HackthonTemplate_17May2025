@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MyApp.Application.Repo;
 using MyApp.Domain.Entities;
 using MyApp.Infrastructure.Persistence;
-using MyApp.Infrastructure.Repos.Interfaces;
 
 namespace MyApp.Infrastructure.Repos.Services;
 
