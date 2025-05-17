@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
+using MyApp.Common.Constants;
 using System.Threading.Tasks;
 
 namespace MyApp.API.Authorization;
@@ -21,10 +22,10 @@ public class PermissionPolicyProvider : IAuthorizationPolicyProvider
     {
         if (policyName.StartsWith("Permission:", StringComparison.OrdinalIgnoreCase))
         {
-            var permission = policyName.Substring("Permission:".Length);
+            var permissionString = policyName.Substring("Permission:".Length);
             
             var policy = new AuthorizationPolicyBuilder()
-                .RequireClaim("permission", permission)
+                .RequireClaim("permission", permissionString)
                 .Build();
                 
             return Task.FromResult<AuthorizationPolicy?>(policy);

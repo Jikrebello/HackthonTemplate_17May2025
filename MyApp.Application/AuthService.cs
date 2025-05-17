@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using MyApp.Common.Constants;
 using MyApp.Common.DTOs.Auth;
 using MyApp.Domain.Entities;
 
@@ -72,7 +73,11 @@ public class AuthService : IAuthService
         // Add permissions as claims
         foreach (var permission in user.Permissions)
         {
-            claims.Add(new Claim("permission", permission.PermissionName));
+            // Try to parse the permission name to our enum
+            if (Enum.TryParse<Permission>(permission.PermissionName, out var permissionEnum))
+            {
+                claims.Add(new Claim("permission", permissionEnum.ToString()));
+            }
         }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));

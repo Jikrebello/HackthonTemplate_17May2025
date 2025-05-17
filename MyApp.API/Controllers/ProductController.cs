@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyApp.API.Authorization;
 using MyApp.Application;
 using MyApp.Application.Interfaces.Services;
 using MyApp.Common.DTOs.Product;
@@ -43,6 +44,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost]
+    [RequirePermission(Permission.ProductManager)]
     public async Task<ActionResult<ProductResponse>> CreateProduct(CreateProductRequest request)
     {
         if (!ModelState.IsValid)
@@ -53,6 +55,7 @@ public class ProductController : ControllerBase
     }
     
     [HttpPut("{id:guid}")]
+    [RequirePermission(Permission.ProductManager)]
     public async Task<ActionResult<ProductResponse>> UpdateProduct(Guid id, UpdateProductRequest request)
     {
         if (!ModelState.IsValid)
@@ -67,6 +70,7 @@ public class ProductController : ControllerBase
     }
     
     [HttpPatch("{id:guid}/quantity")]
+    [RequirePermission(Permission.ProductManager)]
     public async Task<ActionResult<ProductResponse>> UpdateProductQuantity(Guid id, UpdateQuantityRequest request)
     {
         if (!ModelState.IsValid)
@@ -81,6 +85,7 @@ public class ProductController : ControllerBase
     }
     
     [HttpDelete("{id:guid}")]
+    [RequirePermission(Permission.ProductManager)]
     public async Task<ActionResult> DeleteProduct(Guid id)
     {
         var result = await _productService.DeleteProductAsync(id);
