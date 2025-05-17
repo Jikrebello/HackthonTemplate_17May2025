@@ -9,15 +9,6 @@
 	  <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.10.0" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Compile Update="ProductService.cs">
-	    <DependentUpon>IProductService.cs</DependentUpon>
-	  </Compile>
-	  <Compile Update="AuthService.cs">
-	    <DependentUpon>IAuthService.cs</DependentUpon>
-	  </Compile>
-	</ItemGroup>
-
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>

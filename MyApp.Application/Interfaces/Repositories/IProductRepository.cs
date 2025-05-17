@@ -11,4 +11,5 @@ public interface IProductRepository
     Task<bool> DeleteAsync(Guid id);
     Task<bool> ExistsAsync(Guid id);
     Task<IEnumerable<Product>> GetByNameAsync(string name);
+    Task<IEnumerable<Product>> GetByCategoryAsync(Guid categoryId);
 }
