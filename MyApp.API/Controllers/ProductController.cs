@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyApp.Application;
 using MyApp.Application.Interfaces.Services;
 using MyApp.Common.DTOs.Product;
 
@@ -33,6 +34,13 @@ public class ProductController : ControllerBase
             
         return Ok(product);
     }
+    
+    [HttpGet("category/{categoryId:guid}")]
+    public async Task<ActionResult<IEnumerable<ProductResponse>>> GetProductsByCategory(Guid categoryId)
+    {
+        var products = await _productService.GetProductsByCategoryAsync(categoryId);
+        return Ok(products);
+    }
 
     [HttpPost]
     public async Task<ActionResult<ProductResponse>> CreateProduct(CreateProductRequest request)
@@ -42,5 +50,44 @@ public class ProductController : ControllerBase
             
         var product = await _productService.CreateProductAsync(request);
         return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
+    }
+    
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<ProductResponse>> UpdateProduct(Guid id, UpdateProductRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+            
+        var product = await _productService.UpdateProductAsync(id, request);
+        
+        if (product == null)
+            return NotFound();
+            
+        return Ok(product);
+    }
+    
+    [HttpPatch("{id:guid}/quantity")]
+    public async Task<ActionResult<ProductResponse>> UpdateProductQuantity(Guid id, UpdateQuantityRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+            
+        var product = await _productService.UpdateProductQuantityAsync(id, request);
+        
+        if (product == null)
+            return NotFound();
+            
+        return Ok(product);
+    }
+    
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult> DeleteProduct(Guid id)
+    {
+        var result = await _productService.DeleteProductAsync(id);
+        
+        if (!result)
+            return NotFound();
+            
+        return NoContent();
     }
 }

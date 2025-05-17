@@ -1,9 +1,8 @@
-using MyApp.Application.Interfaces.Services;
 using MyApp.Application.Interfaces.Repositories;
 using MyApp.Common.DTOs.Product;
 using MyApp.Domain.Entities;
 
-namespace MyApp.Application.Services;
+namespace MyApp.Application;
 
 public class ProductService : IProductService
 {
@@ -22,6 +21,8 @@ public class ProductService : IProductService
             Name = request.Name,
             Description = request.Description,
             Price = request.Price,
+            Quantity = request.Quantity,
+            CategoryId = request.CategoryId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -43,6 +44,49 @@ public class ProductService : IProductService
         return products.Select(MapToResponse);
     }
     
+    public async Task<ProductResponse?> UpdateProductAsync(Guid id, UpdateProductRequest request)
+    {
+        var existingProduct = await _productRepository.GetByIdAsync(id);
+        if (existingProduct == null)
+            return null;
+            
+        existingProduct.Name = request.Name;
+        existingProduct.Description = request.Description;
+        existingProduct.Price = request.Price;
+        existingProduct.Quantity = request.Quantity;
+        existingProduct.CategoryId = request.CategoryId;
+        existingProduct.UpdatedAt = DateTime.UtcNow;
+        
+        var updatedProduct = await _productRepository.UpdateAsync(existingProduct);
+        return updatedProduct != null ? MapToResponse(updatedProduct) : null;
+    }
+    
+    public async Task<ProductResponse?> UpdateProductQuantityAsync(Guid id, UpdateQuantityRequest request)
+    {
+        var existingProduct = await _productRepository.GetByIdAsync(id);
+        if (existingProduct == null)
+            return null;
+            
+        existingProduct.Quantity = request.Quantity;
+        existingProduct.UpdatedAt = DateTime.UtcNow;
+        
+        var updatedProduct = await _productRepository.UpdateAsync(existingProduct);
+        return updatedProduct != null ? MapToResponse(updatedProduct) : null;
+    }
+    
+    public async Task<bool> DeleteProductAsync(Guid id)
+    {
+        return await _productRepository.DeleteAsync(id);
+    }
+    
+    public async Task<IEnumerable<ProductResponse>> GetProductsByCategoryAsync(Guid categoryId)
+    {
+        var products = await _productRepository.GetAllAsync();
+        return products
+            .Where(p => p.CategoryId == categoryId)
+            .Select(MapToResponse);
+    }
+    
     private static ProductResponse MapToResponse(Product product)
     {
         return new ProductResponse
@@ -51,6 +95,8 @@ public class ProductService : IProductService
             Name = product.Name,
             Description = product.Description,
             Price = product.Price,
+            Quantity = product.Quantity,
+            CategoryId = product.CategoryId,
             CreatedAt = product.CreatedAt,
             UpdatedAt = product.UpdatedAt
         };
