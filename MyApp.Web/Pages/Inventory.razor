@@ -6,8 +6,6 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @inject HttpClient Http
 @inject IJSRuntime Js
-@using Microsoft.AspNetCore.Components.QuickGrid
-
 
 <PageTitle>Inventory Management</PageTitle>
 
@@ -18,43 +16,34 @@
         <AuthorizeView Roles="Admin,Manager">
             <Authorized>
                 <FluentButton Appearance="Appearance.Accent"
-                              OnClick="ShowAddDialog">
-                    <FluentIcon Icon="@new Icons.Regular.Size16.Add()"/>
+                              OnClick="ShowAddDialog"
+                              IconStart="@( new Icons.Regular.Size16.Add() )">
                     Add&nbsp;Item
                 </FluentButton>
             </Authorized>
         </AuthorizeView>
     </div>
 
-    <FluentDataGrid Items="items.AsQueryable()"
-                    TGridItem="InventoryItemDto"
-                    Sortable Filterable ResizableColumns AutoFit>
-
-        <PropertyColumn Title="ID" Width="50px"
-                        Property="@( i => i.Id )"/>
-        <PropertyColumn Title="Name"
-                        Property="@( i => i.Name )"/>
-        <PropertyColumn Title="Quantity" Width="100px"
-                        Property="@( i => i.Quantity )"/>
+    <FluentDataGrid Items="@items.AsQueryable()" Sortable Filterable ResizableColumns AutoFit>
+        <PropertyColumn Title="ID" Width="50px" Property="@( i => i.Id )"/>
+        <PropertyColumn Title="Name" Property="@( i => i.Name )"/>
+        <PropertyColumn Title="Quantity" Width="100px" Property="@( i => i.Quantity )"/>
 
         <TemplateColumn Title="Actions" Width="150px" Context="item">
             <AuthorizeView Roles="Admin,Manager">
                 <Authorized>
                     <FluentButton Appearance="Appearance.Stealth"
                                   Title="Edit"
-                                  OnClick="() => ShowEditDialog(item)">
-                        <FluentIcon Icon="@new Icons.Regular.Size16.Edit()"/>
-                    </FluentButton>
+                                  OnClick="@( () => ShowEditDialog(item) )"
+                                  IconStart="@( new Icons.Regular.Size16.Edit() )"/>
 
                     <FluentButton Appearance="Appearance.Stealth"
                                   Title="Delete"
-                                  OnClick="() => ConfirmDelete(item.Id)">
-                        <FluentIcon Icon="@new Icons.Regular.Size16.Delete()"/>
-                    </FluentButton>
+                                  OnClick="@( () => ConfirmDelete(item.Id) )"
+                                  IconStart="@( new Icons.Regular.Size16.Delete() )"/>
                 </Authorized>
             </AuthorizeView>
         </TemplateColumn>
-
     </FluentDataGrid>
 
     <FluentDialog @bind-IsOpen="isDialogOpen">
@@ -66,6 +55,7 @@
             <FluentTextField Label="Name"
                              @bind-Value="currentItem.Name"
                              Placeholder="Enter item name"/>
+
             <FluentNumberField Label="Quantity"
                                Min="0"
                                @bind-Value="currentItem.Quantity"/>
@@ -73,8 +63,7 @@
 
         <FluentDialogFooter>
             <FluentButton Appearance="Appearance.Neutral"
-                          OnClick="CloseDialog">
-                Cancel
+                          OnClick="CloseDialog">Cancel
             </FluentButton>
 
             <FluentButton Appearance="Appearance.Accent"
@@ -85,8 +74,7 @@
     </FluentDialog>
 </CascadingAuthenticationState>
 
-@code
-{
+@code {
     private List<InventoryItemDto> items = [ ];
     private InventoryItemDto currentItem = new();
     private bool isDialogOpen;
@@ -95,12 +83,12 @@
     protected override async Task OnInitializedAsync()
     {
         await Task.Delay(200); // mock API latency
-        items = new()
-        {
+        items =
+        [
             new() { Id = 1, Name = "AA Batteries (Pack of 4)", Quantity = 23 },
             new() { Id = 2, Name = "USB-C Cable", Quantity = 42 },
             new() { Id = 3, Name = "Wireless Mouse", Quantity = 15 },
-        };
+        ];
     }
 
     private void ShowAddDialog()
@@ -112,12 +100,7 @@
 
     private void ShowEditDialog( InventoryItemDto item )
     {
-        currentItem = new()
-        {
-            Id = item.Id,
-            Name = item.Name,
-            Quantity = item.Quantity
-        };
+        currentItem = new() { Id = item.Id, Name = item.Name, Quantity = item.Quantity };
         editMode = true;
         isDialogOpen = true;
     }
@@ -146,4 +129,5 @@
         if ( await Js.InvokeAsync<bool>("confirm", $"Delete item #{id}?") )
             items.RemoveAll(i => i.Id == id);
     }
+
 }
