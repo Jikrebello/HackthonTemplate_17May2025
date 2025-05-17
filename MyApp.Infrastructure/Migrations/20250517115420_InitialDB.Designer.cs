@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyApp.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250517110313_AddedPendingChanges")]
-    partial class AddedPendingChanges
+    [Migration("20250517115420_InitialDB")]
+    partial class InitialDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -208,10 +208,6 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
@@ -473,26 +469,6 @@ namespace MyApp.Infrastructure.Migrations
                     b.ToTable("Purchases");
                 });
 
-            modelBuilder.Entity("MyApp.Domain.Entities.UserPermission", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("PermissionName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserPermission");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -580,22 +556,6 @@ namespace MyApp.Infrastructure.Migrations
                     b.HasOne("MyApp.Domain.Entities.Product", null)
                         .WithMany("Purchases")
                         .HasForeignKey("ProductId");
-                });
-
-            modelBuilder.Entity("MyApp.Domain.Entities.UserPermission", b =>
-                {
-                    b.HasOne("MyApp.Domain.Entities.AppUser", "User")
-                        .WithMany("Permissions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("MyApp.Domain.Entities.AppUser", b =>
-                {
-                    b.Navigation("Permissions");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.Product", b =>
