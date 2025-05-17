@@ -132,27 +132,7 @@ public static class DbSeeder
         
         await context.Products.AddRangeAsync(products);
         
-        // Create product inventories
-        var inventories = products.Select(p => new Inventory
-        {
-            Id = Guid.NewGuid(),
-            ProductId = p.Id,
-            Quantity = p.Quantity,
-            LastUpdated = DateTime.UtcNow
-        }).ToList();
-        
-        await context.Inventories.AddRangeAsync(inventories);
-        
-        // Create product profits
-        var profits = products.Select(p => new ProductProfit
-        {
-            Id = Guid.NewGuid(),
-            ProductId = p.Id,
-            Cost = p.Price * 0.6m, // Assume cost is 60% of selling price
-            Profit = p.Price * 0.4m // Assume profit is 40% of selling price
-        }).ToList();
-        
-        await context.ProductProfits.AddRangeAsync(profits);
+        // No inventory or profit seeding
         await context.SaveChangesAsync();
         
         // Create admin user with all permissions
