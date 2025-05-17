@@ -6,15 +6,40 @@
 @inject ILocalStorageService LocalStorage
 
 <h3>Manage Users</h3>
+<FluentDialog @bind-Hidden="_isDialogHidden">
+    <FluentDialogHeader>
+        @(_editMode ? "Edit Item" : "Add New Item")
+    </FluentDialogHeader>
+
+    <FluentDialogBody>
+        <FluentTextField Label="Username"
+                         @bind-Value="editOrAdd!.username"
+                         Placeholder="Enter item name" />
+
+        <FluentTextField Label="Description"
+                         Placeholder="Enter User Email"
+                         @bind-Value="editOrAdd.email" />
+    </FluentDialogBody>
+    <FluentDialogFooter>
+        <FluentButton Appearance="Appearance.Neutral"
+                      OnClick="CloseDialog">
+            Cancel
+        </FluentButton>
+
+        <FluentButton Appearance="Appearance.Accent"
+                      OnClick="SaveItem">
+            @(_editMode ? "Update" : "Create")
+        </FluentButton>
+    </FluentDialogFooter>
+</FluentDialog>
 
 <div class="d-flex justify-content-between align-items-start">
     <div class="flex-grow-1">
         <table class="table table-bordered table-hover table-lg custom-table">
             <thead class="table-light">
                 <tr>
-                    <th style="width: 50px;">Default</th>
                     <th style="width: 250px;">Name</th>
-                    <th>Description</th>
+                    <th>Email</th>
                 </tr>
             </thead>
             <tbody>
@@ -23,15 +48,10 @@
                     var user = users[i];
                     var rowClass = i % 2 == 0 ? "even-row" : "odd-row";
                     <tr class="@rowClass @(selectedUser == user ? "table-active" : "")"
-                        @onclick="() => SelectUser(user)"
-                        style="cursor:pointer;">
-                        <td class="align-middle text-center" @onclick:stopPropagation>
-                            <input type="checkbox"
-                                   checked="@user.IsDefault"
-                                   @onchange="() => SetDefaultUser(user)" />
-                        </td>
-                        <td class="align-middle">@user.Name</td>
-                        <td class="align-middle">@user.Description</td>
+                    @onclick="() => SelectUser(user)"
+                    style="cursor:pointer;">
+                        <td class="align-middle">@user.username</td>
+                        <td class="align-middle">@user.email</td>
                     </tr>
                 }
             </tbody>
@@ -40,76 +60,96 @@
 
     <div class="ms-4" style="min-width: 220px; position: fixed; right: 60px; top: 120px;">
         <div class="d-flex flex-column align-items-stretch gap-3">
-            <button class="btn btn-primary custom-btn btn-lg py-4" @onclick="AddUser">Add User</button><br />
-            <button class="btn btn-secondary custom-btn btn-lg py-4" @onclick="EditUser" disabled="@(!CanEdit)">Edit User</button><br />
+            <button class="btn btn-primary custom-btn btn-lg py-4" @onclick="ShowDialog">Add User</button><br />
+            <button class="btn btn-secondary custom-btn btn-lg py-4" @onclick="ShowDialogEdit" disabled="@(!CanEdit)">Edit User</button><br />
             <button class="btn btn-danger custom-btn btn-lg py-4" @onclick="DeleteUser" disabled="@(!CanEdit)">Delete User</button>
         </div>
     </div>
 
     <style>
         .custom-btn {
-            min-width: 220px;
-            min-height: 56px;
-            font-size: 1.15rem;
-            font-weight: 500;
-            margin-bottom: 0 !important;
+        min-width: 220px;
+        min-height: 56px;
+        font-size: 1.15rem;
+        font-weight: 500;
+        margin-bottom: 0 !important;
         }
 
         .d-flex.flex-column.gap-3 > .custom-btn:not(:last-child) {
-            margin-bottom: 1rem !important;
+        margin-bottom: 1rem !important;
         }
     </style>
 </div>
 
 <style>
     .custom-table {
-        min-width: 700px;
-        font-size: 1.1rem;
-        border-collapse: separate;
-        border-spacing: 0;
-        background-color: #fff;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    min-width: 700px;
+    font-size: 1.1rem;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
-        .custom-table th, .custom-table td {
-            border: 1px solid #dee2e6 !important;
-            padding: 1rem 1.25rem;
-        }
+    .custom-table th, .custom-table td {
+    border: 1px solid #dee2e6 !important;
+    padding: 1rem 1.25rem;
+    }
 
-        .custom-table thead th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            text-align: left;
-        }
+    .custom-table thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-align: left;
+    }
 
-        .custom-table tbody tr:hover {
-            background-color: #f1f3f5;
-        }
+    .custom-table tbody tr:hover {
+    background-color: #f1f3f5;
+    }
 
-        .custom-table .even-row {
-            background-color: #ffffff;
-        }
+    .custom-table .even-row {
+    background-color: #ffffff;
+    }
 
-        .custom-table .odd-row {
-            background-color: #f6f8fa;
-        }
+    .custom-table .odd-row {
+    background-color: #f6f8fa;
+    }
 
     .table-active {
-        background-color: #e2e6ea !important;
+    background-color: #e2e6ea !important;
     }
 </style>
 
 @code
 {
-    private List<UserDto> users = new()
+
+    private bool _isDialogHidden = true;
+    private UserDto? SelectedUser;
+    private UserDto editOrAdd = new();
+    private bool _editMode = false;
+
+    private void ShowDialog()
     {
-        new UserDto { Username = "admin", Name = "Administrator", Role = "Admin", Description = "System administrator", IsDefault = true },
-        new UserDto { Username = "john", Name = "John Doe", Role = "User", Description = "Regular user" },
-        new UserDto { Username = "jane", Name = "Jane Smith", Role = "User", Description = "Account manager" },
-        new UserDto { Username = "support", Name = "Support Agent", Role = "Support", Description = "Customer support rep" },
-        new UserDto { Username = "dev", Name = "Developer", Role = "Developer", Description = "Software engineer" },
-        new UserDto { Username = "intern", Name = "Intern Guy", Role = "Intern", Description = "Temporary intern" }
-    };
+        _isDialogHidden = false;
+        _editMode = false;
+        StateHasChanged();
+    }
+
+    private void ShowDialogEdit()
+    {
+        if (SelectedUser == null) return;
+        // Create a copy to edit
+        editOrAdd = new UserDto
+            {
+                id = SelectedUser.id,
+                firstname = SelectedUser.firstname,
+                email = SelectedUser.email,
+            };
+        _isDialogHidden = false;
+        _editMode = true;
+        StateHasChanged();
+    }
+
+    private List<UserDto> users = new();
 
     private UserDto? selectedUser;
 
@@ -120,26 +160,133 @@
         selectedUser = user;
     }
 
-    private void SetDefaultUser(UserDto user)
+    private void CloseDialog()
     {
-        foreach (var u in users)
-        {
-            u.IsDefault = false;
-        }
-
-        user.IsDefault = true;
+        _isDialogHidden = true;
+        StateHasChanged();
     }
 
-    private void AddUser() => Console.WriteLine("Add user clicked");
-    private void EditUser() => Console.WriteLine($"Edit user: {selectedUser?.Username}");
-    private void DeleteUser() => Console.WriteLine($"Delete user: {selectedUser?.Username}");
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:7015/api/user");
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var response = await Http.SendAsync(request);
+        if (response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadAsStringAsync();
+            users = System.Text.Json.JsonSerializer.Deserialize<List<UserDto>>(json) ?? new List<UserDto>();
+        }
+        else
+        {
+            users = new List<UserDto>();
+        }
+    }
+
+    private async Task DeleteUser()
+    {
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        var json = System.Text.Json.JsonSerializer.Serialize(editOrAdd);
+        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(
+            HttpMethod.Delete,
+            $"https://localhost:7015/api/User/{SelectedUser!.id}");
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var index = users.FindIndex(c => c.id == SelectedUser.id);
+        var response = await Http.SendAsync(request);
+        if (index >= 0)
+        {
+            // Remove the item from the local list
+            users.RemoveAt(index);
+            SelectedUser = null;
+            StateHasChanged();
+        }
+        if (response.IsSuccessStatusCode)
+        {
+            // Update the item in the local list
+
+        }
+    }
+
+    private async void SaveItem()
+    {
+        if (_editMode)
+        {
+            SelectedUser = editOrAdd;
+            await EditUser();
+        }
+        else
+        {
+            await AddUser();
+        }
+        CloseDialog();
+    }
+
+    private async Task AddUser()
+    {
+
+        // Add to local list for immediate UI feedback
+        users.Add(editOrAdd);
+
+        // Prepare and send to API
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        var json = System.Text.Json.JsonSerializer.Serialize(editOrAdd);
+        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7015/api/User")
+            {
+                Content = content
+            };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var response = await Http.SendAsync(request);
+        if (response.StatusCode.Equals(200))
+        {
+            
+        }
+    }
+
+    private async Task EditUser()
+    {
+        if (editOrAdd == null) return;
+
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        var json = System.Text.Json.JsonSerializer.Serialize(editOrAdd);
+        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(
+            HttpMethod.Put,
+            $"https://localhost:7015/api/User/{editOrAdd.id}") // Pass Guid in URL
+            {
+                Content = content
+            };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var response = await Http.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            // Update the item in the local list
+            var index = users.FindIndex(c => c.id == editOrAdd.id);
+            if (index >= 0)
+            {
+                // Update the displayed item with the new values
+				users[index] = new UserDto
+                    {
+                        id = editOrAdd.id,
+                        username = editOrAdd.username,
+                        email = editOrAdd.email
+                    };
+                SelectedUser = users[index];
+            }
+        }
+    }
+
 
     public class UserDto
     {
-        public string Username { get; set; } = "";
-        public string Name { get; set; } = "";
-        public string Role { get; set; } = "";
-        public string Description { get; set; } = "";
-        public bool IsDefault { get; set; }
+		public Guid id { get; set; } = Guid.NewGuid();
+        public string username { get; set; } = "12345";
+        public string firstname { get; set; } = "123455";
+        public string email { get; set; } = "123543654@gmail.com";
+        public string lastname { get; set; } = "124235345634";
     }
 }
