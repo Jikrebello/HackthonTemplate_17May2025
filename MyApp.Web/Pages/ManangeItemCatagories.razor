@@ -22,9 +22,6 @@
         <FluentCheckbox Label="Defalut"
                         @bind-Value="editOrAdd.isDefault" />
     </FluentDialogBody>
-
-
-
     <FluentDialogFooter>
         <FluentButton Appearance="Appearance.Neutral"
                       OnClick="CloseDialog">
@@ -71,7 +68,7 @@
     <div class="ms-4" style="min-width: 220px; position: fixed; right: 60px; top: 120px;">
         <div class="d-flex flex-column align-items-stretch gap-3">
             <button class="btn btn-primary custom-btn btn-lg py-4" @onclick="ShowDialog">Add Item Category</button><br />
-            <button class="btn btn-secondary custom-btn btn-lg py-4" @onclick="EditCategory" disabled="@(!IsItemSelected)">Edit Item Category</button><br />
+            <button class="btn btn-secondary custom-btn btn-lg py-4" @onclick="ShowDialogEdit" disabled="@(!IsItemSelected)">Edit Item Category</button><br />
             <button class="btn btn-danger custom-btn btn-lg py-4" @onclick="DeleteCategory" disabled="@(!IsItemSelected)">Delete Item Category</button>
         </div>
     </div>
@@ -138,6 +135,23 @@
     private void ShowDialog()
     {
         _isDialogHidden = false;
+        _editMode = false;
+        StateHasChanged();
+    }
+    private void ShowDialogEdit()
+    {
+        if (SelectedCategory == null) return;
+        // Create a copy to edit
+        editOrAdd = new ItemCategory
+            {
+                id = SelectedCategory.id,
+                name = SelectedCategory.name,
+                description = SelectedCategory.description,
+                isDefault = SelectedCategory.isDefault
+            };
+        _isDialogHidden = false;
+        _editMode = true;
+        StateHasChanged();
     }
 
     protected override async Task OnInitializedAsync()
@@ -160,6 +174,7 @@
     private void CloseDialog()
     {
         _isDialogHidden = true;
+        StateHasChanged();
     }
 
     private async void SaveItem()
@@ -209,29 +224,67 @@
             };
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         var response = await Http.SendAsync(request);
-
-        // Optionally, handle response (e.g., update Id from server)
-        StateHasChanged();
     }
 
     private async Task EditCategory()
     {
-        // Prepare and send to API
+        if (editOrAdd == null) return;
+
         var token = await LocalStorage.GetItemAsync<string>("authToken");
         var json = System.Text.Json.JsonSerializer.Serialize(editOrAdd);
         var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
         var request = new HttpRequestMessage(
-            HttpMethod.Put, 
-            $"https://localhost:7015/api/Category?id:{editOrAdd.id}")
+            HttpMethod.Put,
+            $"https://localhost:7015/api/Category/{editOrAdd.id}") // Pass Guid in URL
+            {
+                Content = content
+            };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var response = await Http.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
         {
-            Content = content
-        };
+            // Update the item in the local list
+            var index = ItemCategories.FindIndex(c => c.id == editOrAdd.id);
+            if (index >= 0)
+            {
+                // Update the displayed item with the new values
+                ItemCategories[index] = new ItemCategory
+                    {
+                        id = editOrAdd.id,
+                        name = editOrAdd.name,
+                        description = editOrAdd.description,
+                        isDefault = editOrAdd.isDefault
+                    };
+                SelectedCategory = ItemCategories[index];
+            }
+        }
     }
 
-    private void DeleteCategory()
+    private async Task DeleteCategory()
     {
-        if (SelectedCategory == null) return;
-        // TODO: Implement delete logic (e.g., confirmation and remove from list)
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        var json = System.Text.Json.JsonSerializer.Serialize(editOrAdd);
+        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(
+            HttpMethod.Delete,
+            $"https://localhost:7015/api/Category/{SelectedCategory!.id}");
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        
+        var index = ItemCategories.FindIndex(c => c.id == SelectedCategory.id);
+        var response = await Http.SendAsync(request);
+        if (index >= 0)
+        {
+            // Remove the item from the local list
+            ItemCategories.RemoveAt(index);
+            SelectedCategory = null;
+            StateHasChanged();
+        }
+        if (response.IsSuccessStatusCode)
+        {
+            // Update the item in the local list
+            
+        }
     }
 
     public class ItemCategory
