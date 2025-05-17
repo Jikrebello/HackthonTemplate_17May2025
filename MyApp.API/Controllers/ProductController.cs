@@ -66,7 +66,6 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost]
-    [RequirePermission(Permission.ProductManager)]
     public async Task<ActionResult<ProductResponse>> CreateProduct(CreateProductRequest request)
     {
         if (!ModelState.IsValid)

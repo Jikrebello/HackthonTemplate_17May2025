@@ -22,7 +22,6 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    [RequirePermission(Permission.UserManager)]
     public async Task<ActionResult<IEnumerable<UserResponse>>> GetAllUsers()
     {
         var users = await _userService.GetAllUsersAsync();
@@ -49,7 +48,6 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("username/{username}")]
-    [RequirePermission(Permission.UserManager)]
     public async Task<ActionResult<UserResponse>> GetUserByUsername(string username)
     {
         var user = await _userService.GetUserByUsernameAsync(username);
@@ -61,7 +59,6 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    [RequirePermission(Permission.UserManager)]
     public async Task<ActionResult<UserResponse>> CreateUser(CreateUserRequest request)
     {
         if (!ModelState.IsValid)
@@ -116,7 +113,6 @@ public class UserController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [RequirePermission(Permission.UserManager)]
     public async Task<ActionResult> DeleteUser(Guid id)
     {
         var result = await _userService.DeleteUserAsync(id);
@@ -128,7 +124,6 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("{id:guid}/permissions")]
-    [RequirePermission(Permission.UserManager)]
     public async Task<ActionResult> AddPermission(Guid id, [FromBody] Permission permission)
     {
         var result = await _userService.AddPermissionAsync(id, permission);
@@ -140,7 +135,6 @@ public class UserController : ControllerBase
     }
 
     [HttpDelete("{id:guid}/permissions/{permission}")]
-    [RequirePermission(Permission.UserManager)]
     public async Task<ActionResult> RemovePermission(Guid id, Permission permission)
     {
         var result = await _userService.RemovePermissionAsync(id, permission);

@@ -48,7 +48,6 @@ public class CategoryController : ControllerBase
     }
 
     [HttpPost]
-    [RequirePermission(Permission.CategoryManager)]
     public async Task<ActionResult<CategoryResponse>> CreateCategory(CreateCategoryRequest request)
     {
         if (!ModelState.IsValid)
@@ -59,7 +58,6 @@ public class CategoryController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    [RequirePermission(Permission.CategoryManager)]
     public async Task<ActionResult<CategoryResponse>> UpdateCategory(Guid id, CreateCategoryRequest request)
     {
         if (!ModelState.IsValid)
@@ -74,7 +72,6 @@ public class CategoryController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [RequirePermission(Permission.CategoryManager)]
     public async Task<ActionResult> DeleteCategory(Guid id)
     {
         var result = await _categoryService.DeleteCategoryAsync(id);
