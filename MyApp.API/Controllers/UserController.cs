@@ -1,12 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MyApp.API.Authorization;
 using MyApp.Application.Interfaces.Services;
-using MyApp.Common.Constants;
 using MyApp.Common.DTOs.User;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace MyApp.API.Controllers;
 
@@ -36,13 +31,6 @@ public class UserController : ControllerBase
         
         if (user == null)
             return NotFound();
-            
-        // Only allow users to access their own data unless they have the UserManager permission
-        if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value != id.ToString() && 
-            !User.HasClaim(c => c.Type == "permission" && c.Value == Permission.UserManager.ToString()))
-        {
-            return Forbid();
-        }
             
         return Ok(user);
     }
@@ -75,13 +63,6 @@ public class UserController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
             
-        // Only allow users to update their own data unless they have the UserManager permission
-        if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value != id.ToString() && 
-            !User.HasClaim(c => c.Type == "permission" && c.Value == Permission.UserManager.ToString()))
-        {
-            return Forbid();
-        }
-        
         var user = await _userService.UpdateUserAsync(id, request);
         
         if (user == null)
@@ -96,14 +77,7 @@ public class UserController : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-            
-        // Only allow users to update their own password unless they have the UserManager permission
-        if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value != id.ToString() && 
-            !User.HasClaim(c => c.Type == "permission" && c.Value == Permission.UserManager.ToString()))
-        {
-            return Forbid();
-        }
-        
+
         var result = await _userService.UpdatePasswordAsync(id, request);
         
         if (!result)
@@ -116,28 +90,6 @@ public class UserController : ControllerBase
     public async Task<ActionResult> DeleteUser(Guid id)
     {
         var result = await _userService.DeleteUserAsync(id);
-        
-        if (!result)
-            return NotFound();
-            
-        return NoContent();
-    }
-
-    [HttpPost("{id:guid}/permissions")]
-    public async Task<ActionResult> AddPermission(Guid id, [FromBody] Permission permission)
-    {
-        var result = await _userService.AddPermissionAsync(id, permission);
-        
-        if (!result)
-            return NotFound();
-            
-        return NoContent();
-    }
-
-    [HttpDelete("{id:guid}/permissions/{permission}")]
-    public async Task<ActionResult> RemovePermission(Guid id, Permission permission)
-    {
-        var result = await _userService.RemovePermissionAsync(id, permission);
         
         if (!result)
             return NotFound();
