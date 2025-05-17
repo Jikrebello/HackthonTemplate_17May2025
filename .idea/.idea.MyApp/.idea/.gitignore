@@ -4,8 +4,6 @@
 # Rider ignored files
 /modules.xml
 /.idea.MyApp.iml
-/projectSettingsUpdater.xml
-/contentModel.xml
 # Editor-based HTTP Client requests
 /httpRequests/
 # Datasource local storage ignored files

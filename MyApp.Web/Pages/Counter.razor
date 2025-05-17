@@ -1,4 +1,7 @@
 ﻿@page "/counter"
+@attribute [Authorize]
+
+
 
 <PageTitle>Counter</PageTitle>
 
@@ -8,7 +11,8 @@
 
 <FluentButton Appearance="Appearance.Accent" @onclick="IncrementCount">Click me</FluentButton>
 
-@code {
+@code
+{
     private int currentCount = 0;
 
     private void IncrementCount()

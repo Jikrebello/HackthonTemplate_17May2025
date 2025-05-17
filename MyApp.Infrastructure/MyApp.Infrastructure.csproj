@@ -11,7 +11,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Repos\Services\" />
+	  <Compile Update="Persistence\ProductRepository.cs">
+	    <DependentUpon>IProductRepository.cs</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 	<PropertyGroup>
