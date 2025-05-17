@@ -1,8 +1,5 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MyApp.API.Authorization;
 using MyApp.Application.Interfaces.Services;
-using MyApp.Common.Constants;
 using MyApp.Common.DTOs.Category;
 
 namespace MyApp.API.Controllers;

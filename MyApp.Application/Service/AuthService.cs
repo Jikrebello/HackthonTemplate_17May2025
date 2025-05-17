@@ -1,10 +1,9 @@
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using MyApp.Common.Constants;
 using MyApp.Application.Interfaces.Services;
 using MyApp.Common.DTOs.Auth;
 using MyApp.Domain.Entities;
@@ -41,22 +40,7 @@ public class AuthService : IAuthService
         {
             throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
         }
-
-        // Add permissions if any are specified
-        foreach (var permission in request.Permissions)
-        {
-            user.Permissions.Add(new UserPermission
-            {
-                UserId = user.Id,
-                PermissionName = permission.ToString()
-            });
-        }
-
-        if (user.Permissions.Any())
-        {
-            await _userManager.UpdateAsync(user);
-        }
-
+        
         return await GenerateJwt(user);
     }
 
@@ -98,8 +82,6 @@ public class AuthService : IAuthService
             }
         }
         */
-        var permissions = new List<Permission>();
-
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -115,7 +97,6 @@ public class AuthService : IAuthService
         {
             Token = new JwtSecurityTokenHandler().WriteToken(token),
             UserName = user.UserName!,
-            Permissions = permissions
         };
     }
 }

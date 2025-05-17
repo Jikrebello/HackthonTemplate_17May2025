@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using MyApp.Common.Constants;
 using MyApp.Domain.Entities;
 
 namespace MyApp.Infrastructure.Persistence;
