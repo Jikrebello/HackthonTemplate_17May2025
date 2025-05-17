@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyApp.Application.Interfaces.Services;
+using MyApp.Common.Constants;
 using MyApp.Common.DTOs.User;
 using MyApp.Domain.Entities;
 using System;
@@ -134,9 +135,13 @@ public class UserService : IUserService
         }
 
         // Update permissions
-        var currentPermissions = user.Permissions.Select(p => p.PermissionName).ToList();
-        var permissionsToAdd = request.Permissions.Except(currentPermissions).ToList();
-        var permissionsToRemove = currentPermissions.Except(request.Permissions).ToList();
+        var currentPermissionEnums = user.Permissions
+            .Where(p => Enum.TryParse<Permission>(p.PermissionName, out _))
+            .Select(p => Enum.Parse<Permission>(p.PermissionName))
+            .ToList();
+            
+        var permissionsToAdd = request.Permissions.Except(currentPermissionEnums).ToList();
+        var permissionsToRemove = currentPermissionEnums.Except(request.Permissions).ToList();
 
         foreach (var permission in permissionsToAdd)
         {
@@ -167,34 +172,34 @@ public class UserService : IUserService
         return result.Succeeded;
     }
 
-    public async Task<bool> AddPermissionAsync(Guid userId, string permission)
+    public async Task<bool> AddPermissionAsync(Guid userId, Permission permission)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
             return false;
 
         // Check if permission already exists
-        if (user.Permissions.Any(p => p.PermissionName == permission))
+        if (user.Permissions.Any(p => p.PermissionName == permission.ToString()))
             return true;
 
         user.Permissions.Add(new UserPermission
         {
             UserId = userId,
-            PermissionName = permission
+            PermissionName = permission.ToString()
         });
 
         var result = await _userManager.UpdateAsync(user);
         return result.Succeeded;
     }
 
-    public async Task<bool> RemovePermissionAsync(Guid userId, string permission)
+    public async Task<bool> RemovePermissionAsync(Guid userId, Permission permission)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
             return false;
 
         var permissionToRemove = user.Permissions
-            .FirstOrDefault(p => p.PermissionName == permission);
+            .FirstOrDefault(p => p.PermissionName == permission.ToString());
 
         if (permissionToRemove == null)
             return true;
@@ -216,7 +221,10 @@ public class UserService : IUserService
             FirstName = user.FirstName,
             LastName = user.LastName,
             Role = roles.FirstOrDefault() ?? user.Role,
-            Permissions = user.Permissions.Select(p => p.PermissionName).ToList()
+            Permissions = user.Permissions
+                .Where(p => Enum.TryParse<Permission>(p.PermissionName, out _))
+                .Select(p => Enum.Parse<Permission>(p.PermissionName))
+                .ToList()
         };
     }
 }

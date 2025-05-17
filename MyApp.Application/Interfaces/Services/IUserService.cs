@@ -1,3 +1,4 @@
+using MyApp.Common.Constants;
 using MyApp.Common.DTOs.User;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,6 +14,6 @@ public interface IUserService
     Task<UserResponse?> UpdateUserAsync(Guid id, UpdateUserRequest request);
     Task<bool> UpdatePasswordAsync(Guid id, UpdatePasswordRequest request);
     Task<bool> DeleteUserAsync(Guid id);
-    Task<bool> AddPermissionAsync(Guid userId, string permission);
-    Task<bool> RemovePermissionAsync(Guid userId, string permission);
+    Task<bool> AddPermissionAsync(Guid userId, Permission permission);
+    Task<bool> RemovePermissionAsync(Guid userId, Permission permission);
 }

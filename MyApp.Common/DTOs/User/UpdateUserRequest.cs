@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using MyApp.Common.Constants;
 
 namespace MyApp.Common.DTOs.User;
 
@@ -11,5 +12,5 @@ public class UpdateUserRequest
     
     public string Role { get; set; } = string.Empty;
     
-    public List<string> Permissions { get; set; } = new List<string>();
+    public List<Permission> Permissions { get; set; } = new List<Permission>();
 }

@@ -129,11 +129,8 @@ public class UserController : ControllerBase
 
     [HttpPost("{id:guid}/permissions")]
     [RequirePermission(Permission.UserManager)]
-    public async Task<ActionResult> AddPermission(Guid id, [FromBody] string permission)
+    public async Task<ActionResult> AddPermission(Guid id, [FromBody] Permission permission)
     {
-        if (string.IsNullOrEmpty(permission))
-            return BadRequest("Permission cannot be empty");
-            
         var result = await _userService.AddPermissionAsync(id, permission);
         
         if (!result)
@@ -144,11 +141,8 @@ public class UserController : ControllerBase
 
     [HttpDelete("{id:guid}/permissions/{permission}")]
     [RequirePermission(Permission.UserManager)]
-    public async Task<ActionResult> RemovePermission(Guid id, string permission)
+    public async Task<ActionResult> RemovePermission(Guid id, Permission permission)
     {
-        if (string.IsNullOrEmpty(permission))
-            return BadRequest("Permission cannot be empty");
-            
         var result = await _userService.RemovePermissionAsync(id, permission);
         
         if (!result)
