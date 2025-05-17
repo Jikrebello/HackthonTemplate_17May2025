@@ -20,4 +20,6 @@ public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
 
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
+
+    public DbSet<Category> Categories { get; set; }
 }
