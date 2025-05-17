@@ -10,101 +10,103 @@
 
 <PageTitle>Inventory Management</PageTitle>
 
-    <div class="page-header">
-        <h2>Inventory</h2>
+<div class="page-header">
+    <h2>Inventory</h2>
+
+    <FluentButton Appearance="Appearance.Accent"
+                  OnClick="ShowAddDialog"
+                  IconStart="@( new Icons.Regular.Size16.Add() )">
+        Add&nbsp;Item
+    </FluentButton>
+</div>
+
+<FluentDataGrid Items="@_items.AsQueryable()"
+                Sortable
+                Filterable
+                ResizableColumns
+                AutoFit>
+
+    <!-- wrap all your columns in the ChildContent fragment -->
+    <ChildContent>
+        <PropertyColumn Title="ID"
+                        Width="50px"
+                        Property="@( i => i.Id )"/>
+
+        <PropertyColumn Title="Name"
+                        Property="@( i => i.Name )"/>
+
+        <PropertyColumn Title="Description"
+                        Property="@( i => i.Description )"/>
+
+        <PropertyColumn Title="Price"
+                        Property="@( i => i.Price )"/>
+
+        <PropertyColumn Title="Quantity"
+                        Width="100px"
+                        Property="@( i => i.Quantity )"/>
+
+        <TemplateColumn Title="Actions"
+                        Width="150px"
+                        Context="item">
+            <FluentButton Appearance="Appearance.Stealth"
+                          Title="Edit"
+                          OnClick="@( () => ShowEditDialog(item) )"
+                          IconStart="@( new Icons.Regular.Size16.Edit() )"/>
+
+            <FluentButton Appearance="Appearance.Stealth"
+                          Title="Delete"
+                          OnClick="@( () => ConfirmDelete(item.Id) )"
+                          IconStart="@( new Icons.Regular.Size16.Delete() )"/>
+        </TemplateColumn>
+    </ChildContent>
+
+    <!-- this renders only when _items is empty -->
+    <EmptyContent>
+        <div style="text-align:center; padding:1rem;">
+            <p>No items found—try adding some!</p>
+            <FluentButton Appearance="Appearance.Neutral"
+                          OnClick="ShowAddDialog">
+                Add Item
+            </FluentButton>
+        </div>
+    </EmptyContent>
+
+</FluentDataGrid>
+
+
+<FluentDialog @bind-Hidden="_isDialogHidden">
+    <FluentDialogHeader>
+        @(_editMode ? "Edit Item" : "Add New Item")
+    </FluentDialogHeader>
+
+    <FluentDialogBody>
+        <FluentTextField Label="Name"
+                         @bind-Value="_currentItem.Name"
+                         Placeholder="Enter item name"/>
+
+        <FluentTextField Label="Description"
+                         @bind-Value="_currentItem.Description"
+                         Placeholder="Enter item description"/>
+
+        <FluentNumberField Label="Quantity"
+                           Min="0"
+                           @bind-Value="_currentItem.Quantity"/>
+
+        <FluentNumberField Label="Price" @bind-Value="_currentItem.Price" TValue="decimal" Step="0.1" type="number"/>
+
+    </FluentDialogBody>
+
+    <FluentDialogFooter>
+        <FluentButton Appearance="Appearance.Neutral"
+                      OnClick="CloseDialog">Cancel
+        </FluentButton>
 
         <FluentButton Appearance="Appearance.Accent"
-                      OnClick="ShowAddDialog"
-                      IconStart="@( new Icons.Regular.Size16.Add() )">
-            Add&nbsp;Item
+                      OnClick="SaveItem">
+            @(_editMode ? "Update" : "Create")
         </FluentButton>
-    </div>
-
-    <FluentDataGrid Items="@_items.AsQueryable()"
-                    Sortable
-                    Filterable
-                    ResizableColumns
-                    AutoFit>
-
-        <!-- wrap all your columns in the ChildContent fragment -->
-        <ChildContent>
-            <PropertyColumn Title="ID"
-                            Width="50px"
-                            Property="@( i => i.Id )" />
-
-            <PropertyColumn Title="Name"
-                            Property="@( i => i.Name )" />
-
-            <PropertyColumn Title="Quantity"
-                            Width="100px"
-                            Property="@( i => i.Quantity )" />
-
-            <TemplateColumn Title="Actions"
-                            Width="150px"
-                            Context="item">
-                <AuthorizeView Roles="Admin,Manager">
-                    <Authorized>
-                        <FluentButton Appearance="Appearance.Stealth"
-                                      Title="Edit"
-                                      OnClick="@( () => ShowEditDialog(item) )"
-                                      IconStart="@( new Icons.Regular.Size16.Edit() )" />
-
-                        <FluentButton Appearance="Appearance.Stealth"
-                                      Title="Delete"
-                                      OnClick="@( () => ConfirmDelete(item.Id) )"
-                                      IconStart="@( new Icons.Regular.Size16.Delete() )" />
-                    </Authorized>
-                </AuthorizeView>
-            </TemplateColumn>
-        </ChildContent>
-
-        <!-- this renders only when _items is empty -->
-        <EmptyContent>
-            <div style="text-align:center; padding:1rem;">
-                <p>No items found—try adding some!</p>
-                <FluentButton Appearance="Appearance.Neutral"
-                              OnClick="ShowAddDialog">
-                    Add Item
-                </FluentButton>
-            </div>
-        </EmptyContent>
-
-    </FluentDataGrid>
-
-
-    <FluentDialog @bind-Hidden="_isDialogHidden">
-        <FluentDialogHeader>
-            @(_editMode ? "Edit Item" : "Add New Item")
-        </FluentDialogHeader>
-
-        <FluentDialogBody>
-            <FluentTextField Label="Name"
-                             @bind-Value="_currentItem.Name"
-                             Placeholder="Enter item name"/>
-
-            <FluentTextField Label="Description"
-                             @bind-Value="_currentItem.Description"
-                             Placeholder="Enter item description"/>
-
-            <FluentNumberField Label="Quantity"
-                               Min="0"
-                               @bind-Value="_currentItem.Quantity"/>
-
-            <FluentNumberField Label="Price" @bind-Value="_currentItem.Price" TValue="decimal" Step="0.1" type="number" />
-
-        </FluentDialogBody>
-
-        <FluentDialogFooter>
-            <FluentButton Appearance="Appearance.Neutral"
-                          OnClick="CloseDialog">Cancel
-            </FluentButton>
-
-            <FluentButton Appearance="Appearance.Accent"
-                          OnClick="SaveItem">
-                @(_editMode ? "Update" : "Create")
-            </FluentButton>
-        </FluentDialogFooter>
-    </FluentDialog>
+    </FluentDialogFooter>
+</FluentDialog>
 
 @code {
     private List<ProductDto> _items = [ ];
@@ -123,6 +125,7 @@
         var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:7015/api/Product");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         var response = await Http.SendAsync(request);
+
         var results = await response.Content.ReadFromJsonAsync<List<ProductDto>>();
         _items = results ?? [ ];
         StateHasChanged();
@@ -155,14 +158,16 @@
         else
         {
             var token = await LocalStorage.GetItemAsync<string>("authToken");
-            var json = System.Text.Json.JsonSerializer.Serialize(new
-            {
-                name = _currentItem.Name,
-                description = _currentItem.Description,
-                price = _currentItem.Price,
-                quantity = _currentItem.Quantity,
-                categoryId = _currentItem.CategoryId
-            });
+            var json = System.Text.Json.JsonSerializer.Serialize(
+                new
+                {
+                    name = _currentItem.Name,
+                    description = _currentItem.Description,
+                    price = _currentItem.Price,
+                    quantity = _currentItem.Quantity,
+                    categoryId = _currentItem.CategoryId
+                }
+            );
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
             var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7015/api/Product")
             {

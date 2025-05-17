@@ -1,15 +1,15 @@
 ﻿namespace MyApp.Web.DTOs;
 
-public record ProductDto
+public class ProductDto
 {
-    public Guid Id;
-    public string Name = string.Empty;
-    public string Description = string.Empty;
-    public decimal Price;
-    public int Quantity;
-    public DateTime CreatedAt;
-    public DateTime UpdatedAt;
-    public bool IsDeleted;
-    public DateTime? DeletedAt;
-    public Guid CategoryId = Guid.NewGuid();
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public int Quantity { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public bool IsDeleted { get; set; }
+    public DateTime? DeletedAt { get; set; }
+    public Guid CategoryId { get; set; } = Guid.NewGuid();
 }
