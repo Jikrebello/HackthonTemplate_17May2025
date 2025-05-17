@@ -1,11 +1,331 @@
 ﻿@page "/scan-items"
+@using System.Net.Http.Json
 @using Blazored.LocalStorage
 @inject HttpClient Http
 @inject NavigationManager Nav
 @inject ILocalStorageService LocalStorage
+@attribute [Authorize]
 
-<h3>Scan Items</h3>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h3 class="card-title mb-4 text-primary">Scan Items</h3>
+                    <div class="mb-3">
+                        <label for="barcodeInput" class="form-label">Enter Barcode</label>
+                        <div class="input-group">
+                            <input id="barcodeInput" class="form-control" @bind="barcode" @bind:event="oninput" placeholder="Scan or type barcode..." @onkeydown="HandleEnter" />
+                            <button class="btn btn-primary" type="button" @onclick="FetchPurchaseDetails">
+                                <i class="bi bi-search me-1"></i>Search
+                            </button>
+                            <button class="btn btn-outline-secondary" type="button" @onclick="OpenCamera">
+                                <i class="bi bi-camera me-1"></i>Camera
+                            </button>
+                        </div>
+                    </div>
+                    @if (showCamera)
+                    {
+                        <div class="mb-3">
+                            <video id="cameraPreview" width="320" height="240" autoplay style="border:1px solid #ccc; border-radius:8px;"></video>
+                            <div class="mt-2 d-flex gap-2">
+                                <button class="btn btn-success" @onclick="TakePhoto">Take Photo</button>
+                                <button class="btn btn-danger" @onclick="CloseCamera">Close Camera</button>
+                            </div>
+                            @if (!string.IsNullOrEmpty(photoDataUrl))
+                            {
+                                <div class="mt-2">
+                                    <img src="@photoDataUrl" alt="Captured photo" style="max-width:320px;max-height:240px;border:1px solid #ccc; border-radius:8px;" />
+                                </div>
+                            }
+                        </div>
+                    }
+                    @if (isLoading)
+                    {
+                        <div class="text-center my-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    }
+                    @if (purchaseDetails != null)
+                    {
+                        <div class="card mt-4 animate__animated animate__fadeIn">
+                            <div class="card-body">
+                                <h5 class="card-title">@purchaseDetails.ItemName</h5>
+                                @if (!string.IsNullOrEmpty(fuzzyMatchInfo))
+                                {
+                                    <div class="alert alert-info py-1 px-2 mb-2 small">
+                                        <i class="bi bi-info-circle me-1"></i>@fuzzyMatchInfo
+                                    </div>
+                                }
+                                <p class="card-text">
+                                    <strong>Date/Time Purchased:</strong> @purchaseDetails.PurchaseDateTime.ToString("g")<br />
+                                    <strong>Paid Currency:</strong> @purchaseDetails.PaidCurrency<br />
+                                    <strong>Amount Paid:</strong> @purchaseDetails.AmountPaid.ToString("C")<br />
+                                    <strong>Change Currency:</strong> @purchaseDetails.ChangeCurrency<br />
+                                    <strong>Change Amount:</strong> @purchaseDetails.ChangeAmount.ToString("C")
+                                </p>
+                                <div class="mb-2">
+                                    <label class="form-label">Purchase Method</label>
+                                    <select class="form-select" @bind="selectedPurchaseMethod">
+                                        <option value="Cash">Cash</option>
+                                        <option value="QRCode">QR Code</option>
+                                    </select>
+                                </div>
+                                <div class="d-flex gap-3 mt-4">
+                                    <button class="btn btn-success px-4" @onclick="SavePurchaseAsync" disabled="@isSaving">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" style="display:@(isSaving ? "inline-block" : "none")"></span>
+                                        Save
+                                    </button>
+                                    <button class="btn btn-secondary px-4" @onclick="CancelSearch" disabled="@isSaving">Cancel</button>
+                                </div>
+                                @if (!string.IsNullOrEmpty(saveMessage))
+                                {
+                                    <div class="alert mt-3 @(saveSuccess ? "alert-success" : "alert-danger")">
+                                        @saveMessage
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else if (searched && !isLoading)
+                    {
+                        <div class="alert alert-warning mt-4 animate__animated animate__fadeIn">No purchase details found for this barcode.</div>
+                        <div class="d-flex gap-3 mt-4">
+                            <button class="btn btn-secondary px-4" @onclick="CancelSearch">Cancel</button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @code {
+    private string barcode;
+    private bool showCamera = false;
+    private bool searched = false;
+    private bool isLoading = false;
+    private bool isSaving = false;
+    private PurchaseDetails purchaseDetails;
+    private string selectedPurchaseMethod = "Cash";
+    private string photoDataUrl;
+    private string fuzzyMatchInfo;
+    private string saveMessage;
+    private bool saveSuccess;
 
+    // Mock list of known barcodes and their details
+    private Dictionary<string, PurchaseDetails> knownBarcodes = new()
+        {
+            ["1234567890"] = new PurchaseDetails
+            {
+                ItemName = "Sample Item",
+                PurchaseDateTime = DateTime.Now.AddDays(-1),
+                PaidCurrency = "USD",
+                AmountPaid = 20.00m,
+                ChangeCurrency = "USD",
+                ChangeAmount = 5.00m
+            },
+            ["9876543210"] = new PurchaseDetails
+            {
+                ItemName = "Another Item",
+                PurchaseDateTime = DateTime.Now.AddDays(-2),
+                PaidCurrency = "USD",
+                AmountPaid = 15.00m,
+                ChangeCurrency = "USD",
+                ChangeAmount = 2.00m
+            }
+        // Add more as needed
+        };
+
+    [Inject]
+    private IJSRuntime JS { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (showCamera)
+        {
+            await StartCameraAsync();
+        }
+    }
+
+    private async Task StartCameraAsync()
+    {
+        await JS.InvokeVoidAsync("startCamera", "cameraPreview");
+    }
+
+    private async Task StopCameraAsync()
+    {
+        await JS.InvokeVoidAsync("stopCamera", "cameraPreview");
+    }
+
+    private async void CloseCamera()
+    {
+        showCamera = false;
+        await StopCameraAsync();
+        StateHasChanged();
+    }
+
+    private void OpenCamera()
+    {
+        showCamera = true;
+        photoDataUrl = null;
+    }
+
+    private async Task TakePhoto()
+    {
+        photoDataUrl = await JS.InvokeAsync<string>("takePhoto", "cameraPreview");
+        StateHasChanged();
+    }
+
+    private async Task FetchPurchaseDetails()
+    {
+        searched = false;
+        isLoading = true;
+        purchaseDetails = null;
+        fuzzyMatchInfo = null;
+        saveMessage = null;
+        StateHasChanged();
+
+        await Task.Delay(400); // Simulate loading
+
+        if (string.IsNullOrWhiteSpace(barcode))
+        {
+            isLoading = false;
+            return;
+        }
+
+        // Fuzzy search: find the closest barcode in knownBarcodes
+        string closestBarcode = null;
+        int minDistance = int.MaxValue;
+        foreach (var known in knownBarcodes.Keys)
+        {
+            int distance = LevenshteinDistance(barcode, known);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestBarcode = known;
+            }
+        }
+
+        // You can adjust the threshold as needed (e.g., max 2 character difference)
+        if (closestBarcode != null && minDistance <= 2)
+        {
+            purchaseDetails = knownBarcodes[closestBarcode];
+            if (barcode != closestBarcode)
+            {
+                fuzzyMatchInfo = $"Showing results for closest match: {closestBarcode}";
+            }
+        }
+
+        searched = true;
+        isLoading = false;
+    }
+
+    private void HandleEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            _ = FetchPurchaseDetails();
+        }
+    }
+
+    private async Task SavePurchaseAsync()
+    {
+        if (purchaseDetails == null) return;
+        isSaving = true;
+        saveMessage = null;
+        saveSuccess = false;
+        StateHasChanged();
+
+        try
+        {
+            // Example API call - adjust endpoint and payload as needed
+            var payload = new
+            {
+                Barcode = barcode,
+                purchaseDetails.ItemName,
+                purchaseDetails.PurchaseDateTime,
+                purchaseDetails.PaidCurrency,
+                purchaseDetails.AmountPaid,
+                purchaseDetails.ChangeCurrency,
+                purchaseDetails.ChangeAmount,
+                PurchaseMethod = selectedPurchaseMethod
+            };
+
+            var response = await Http.PostAsJsonAsync("api/purchases", payload);
+            if (response.IsSuccessStatusCode)
+            {
+                saveMessage = "Purchase saved successfully.";
+                saveSuccess = true;
+            }
+            else
+            {
+                saveMessage = "Failed to save purchase.";
+                saveSuccess = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            saveMessage = $"Error: {ex.Message}";
+            saveSuccess = false;
+        }
+        isSaving = false;
+        StateHasChanged();
+    }
+
+    private void CancelSearch()
+    {
+        barcode = string.Empty;
+        purchaseDetails = null;
+        searched = false;
+        isLoading = false;
+        fuzzyMatchInfo = null;
+        saveMessage = null;
+        photoDataUrl = null;
+        selectedPurchaseMethod = "Cash";
+    }
+
+    // Simple Levenshtein distance implementation
+    private int LevenshteinDistance(string s, string t)
+    {
+        if (string.IsNullOrEmpty(s)) return t?.Length ?? 0;
+        if (string.IsNullOrEmpty(t)) return s.Length;
+
+        int[,] d = new int[s.Length + 1, t.Length + 1];
+
+        for (int i = 0; i <= s.Length; i++) d[i, 0] = i;
+        for (int j = 0; j <= t.Length; j++) d[0, j] = j;
+
+        for (int i = 1; i <= s.Length; i++)
+        {
+            for (int j = 1; j <= t.Length; j++)
+            {
+                int cost = s[i - 1] == t[j - 1] ? 0 : 1;
+                d[i, j] = Math.Min(
+                    Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+                    d[i - 1, j - 1] + cost);
+            }
+        }
+        return d[s.Length, t.Length];
+    }
+
+    // Call this method when a barcode is scanned from the camera
+    private async Task OnBarcodeScanned(string scannedBarcode)
+    {
+        barcode = scannedBarcode;
+        showCamera = false;
+        await FetchPurchaseDetails();
+    }
+
+    public class PurchaseDetails
+    {
+        public string ItemName { get; set; }
+        public DateTime PurchaseDateTime { get; set; }
+        public string PaidCurrency { get; set; }
+        public decimal AmountPaid { get; set; }
+        public string ChangeCurrency { get; set; }
+        public decimal ChangeAmount { get; set; }
+    }
 }

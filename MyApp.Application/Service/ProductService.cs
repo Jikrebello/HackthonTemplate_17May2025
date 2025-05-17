@@ -8,10 +8,12 @@ namespace MyApp.Application;
 public class ProductService : IProductService
 {
     private readonly IProductRepository _productRepository;
+    private readonly IProductAuditService _productAuditService;
     
-    public ProductService(IProductRepository productRepository)
+    public ProductService(IProductRepository productRepository, IProductAuditService productAuditService)
     {
         _productRepository = productRepository;
+        _productAuditService = productAuditService;
     }
 
 
@@ -30,6 +32,15 @@ public class ProductService : IProductService
         };
     
         await _productRepository.CreateAsync(product);
+        
+        // Create audit entry for product creation
+        await _productAuditService.CreateAuditAsync(new Common.DTOs.ProductAudit.CreateProductAuditRequest
+        {
+            ProductId = product.Id,
+            Action = "Create",
+            FieldName = "All",
+            NewValue = $"Name: {product.Name}, Price: {product.Price}, Quantity: {product.Quantity}"
+        });
     
         return MapToResponse(product);
 
@@ -52,19 +63,42 @@ public class ProductService : IProductService
         var existingProduct = await _productRepository.GetByIdAsync(id);
         if (existingProduct == null)
             return null;
-            
+        
+        int oldQuantity = existingProduct.Quantity;
         existingProduct.Quantity = request.Quantity;
         existingProduct.UpdatedAt = DateTime.UtcNow;
         
         var updatedProduct = await _productRepository.UpdateAsync(existingProduct);
+        
+        // Create audit entry for quantity update
+        await _productAuditService.CreateAuditAsync(new Common.DTOs.ProductAudit.CreateProductAuditRequest
+        {
+            ProductId = id,
+            Action = "Update",
+            FieldName = "Quantity",
+            OldValue = oldQuantity.ToString(),
+            NewValue = request.Quantity.ToString()
+        });
+        
         return updatedProduct != null ? MapToResponse(updatedProduct) : null;
-
     }
 
     public async Task<bool> DeleteProductAsync(Guid id)
     {
+        var product = await _productRepository.GetByIdAsync(id);
+        if (product != null)
+        {
+            // Create audit entry for product deletion
+            await _productAuditService.CreateAuditAsync(new Common.DTOs.ProductAudit.CreateProductAuditRequest
+            {
+                ProductId = id,
+                Action = "Delete",
+                FieldName = "All",
+                OldValue = $"Name: {product.Name}, Price: {product.Price}, Quantity: {product.Quantity}"
+            });
+        }
+        
         return await _productRepository.DeleteAsync(id);
-
     }
 
     public async Task<IEnumerable<ProductResponse>> GetProductsByCategoryAsync(Guid categoryId)
@@ -79,6 +113,17 @@ public class ProductService : IProductService
         var existingProduct = await _productRepository.GetByIdAsync(request.Id);
         if (existingProduct == null)
             return null;
+        
+        // Store the old product state for audit
+        var oldProduct = new Product
+        {
+            Id = existingProduct.Id,
+            Name = existingProduct.Name,
+            Description = existingProduct.Description,
+            Price = existingProduct.Price,
+            Quantity = existingProduct.Quantity,
+            CategoryId = existingProduct.CategoryId
+        };
             
         existingProduct.Name = request.Name;
         existingProduct.Description = request.Description;
@@ -88,6 +133,10 @@ public class ProductService : IProductService
         existingProduct.UpdatedAt = DateTime.UtcNow;
         
         var updatedProduct = await _productRepository.UpdateAsync(existingProduct);
+        
+        // Track all changes between old and new product
+        await _productAuditService.TrackProductChangesAsync(oldProduct, updatedProduct);
+        
         return updatedProduct != null ? MapToResponse(updatedProduct) : null;
     }
     

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyApp.API.Authorization;
 using MyApp.Application;
 using MyApp.Application.Interfaces.Services;
+using MyApp.Common.Constants;
 using MyApp.Common.DTOs.Product;
 
 namespace MyApp.API.Controllers;
@@ -64,6 +66,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost]
+    [RequirePermission(Permission.ProductManager)]
     public async Task<ActionResult<ProductResponse>> CreateProduct(CreateProductRequest request)
     {
         if (!ModelState.IsValid)
@@ -72,7 +75,6 @@ public class ProductController : ControllerBase
         var product = await _productService.CreateProductAsync(request);
         return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
     }
-    
     
     [HttpPatch("{id:guid}/quantity")]
     public async Task<ActionResult<ProductResponse>> UpdateProductQuantity(Guid id, UpdateQuantityRequest request)
@@ -86,8 +88,8 @@ public class ProductController : ControllerBase
             return NotFound();
             
         return Ok(product);
-    }
-    
+    }    
+ 
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteProduct(Guid id)
     {
@@ -100,8 +102,8 @@ public class ProductController : ControllerBase
             return NotFound();
             
         return Ok();
-    }
-    
+    }   
+
     [HttpPut()]
     public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductRequest request)
     {

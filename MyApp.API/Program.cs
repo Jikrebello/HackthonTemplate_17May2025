@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using MyApp.Infrastructure.DependencyInjection;
 using MyApp.Infrastructure.Persistence;
@@ -23,6 +24,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Register custom authorization policy provider
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, MyApp.API.Authorization.PermissionPolicyProvider>();
 
 var app = builder.Build();
 
