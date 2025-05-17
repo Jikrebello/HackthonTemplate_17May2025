@@ -26,7 +26,7 @@ public class ProductService : IProductService
             Description = request.Description,
             Price = request.Price,
             Quantity = request.Quantity,
-            Barcode = request.Barcode,
+            Barcode = GenerateBarcode(), // Temp solution for barcode generation
             CategoryId = request.CategoryId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -141,6 +141,18 @@ public class ProductService : IProductService
         await _productAuditService.TrackProductChangesAsync(oldProduct, updatedProduct);
         
         return updatedProduct != null ? MapToResponse(updatedProduct) : null;
+    }
+    
+    private static string GenerateBarcode()
+    {
+        // Generate a random 12-digit barcode
+        Random random = new Random();
+        string barcode = string.Empty;
+        for (int i = 0; i < 5; i++)
+        {
+            barcode += random.Next(0, 10).ToString();
+        }
+        return barcode;
     }
     
     private static ProductResponse MapToResponse(Product product)
