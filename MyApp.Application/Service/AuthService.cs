@@ -4,10 +4,11 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using MyApp.Application.Interfaces.Services;
 using MyApp.Common.DTOs.Auth;
 using MyApp.Domain.Entities;
 
-namespace MyApp.Application;
+namespace MyApp.Application.Services;
 
 public class AuthService : IAuthService
 {
