@@ -9,4 +9,6 @@ public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
+
+    public DbSet<Category> Categories { get; set; }
 }
