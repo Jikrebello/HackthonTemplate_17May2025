@@ -1,5 +1,6 @@
 ﻿@page "/inventory"
-
+@inject ILocalStorageService LocalStorage
+@using Blazored.LocalStorage
 @using Microsoft.FluentUI.AspNetCore.Components
 @using Microsoft.FluentUI.AspNetCore.Components.DataGrid
 @using MyApp.Web.DTOs
@@ -117,8 +118,12 @@
 
     private async Task Refresh()
     {
-        var results = await Http.GetFromJsonAsync<List<ProductDto>>("api/Product");
-        _items = await Http.GetFromJsonAsync<List<ProductDto>>("api/Product") ?? [ ];
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:7015/api/Product");
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var response = await Http.SendAsync(request);
+        var results = await response.Content.ReadFromJsonAsync<List<ProductDto>>();
+        _items = results ?? [ ];
         StateHasChanged();
     }
 
@@ -148,19 +153,24 @@
         }
         else
         {
-            var res = await Http.PostAsJsonAsync(
-                "api/Product", new
-                {
-                    name = _currentItem.Name,
-                    description = _currentItem.Description,
-                    price = _currentItem.Price,
-                    quantity = _currentItem.Quantity,
-                    categoryId = _currentItem.CategoryId
-                }
-            );
-            res.EnsureSuccessStatusCode();
+            var token = await LocalStorage.GetItemAsync<string>("authToken");
+            var json = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                name = _currentItem.Name,
+                description = _currentItem.Description,
+                price = _currentItem.Price,
+                quantity = _currentItem.Quantity,
+                categoryId = _currentItem.CategoryId
+            });
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7015/api/Product")
+            {
+                Content = content
+            };
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var response = await Http.SendAsync(request);
+            var created = await response.Content.ReadFromJsonAsync<ProductDto>();
 
-            var created = await res.Content.ReadFromJsonAsync<ProductDto>();
             if ( created == null )
                 throw new Exception("Failed to create item");
 
