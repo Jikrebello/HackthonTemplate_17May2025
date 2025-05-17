@@ -251,7 +251,7 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.Inventory", b =>
@@ -289,7 +289,7 @@ namespace MyApp.Infrastructure.Migrations
                     b.HasIndex("ProductId")
                         .IsUnique();
 
-                    b.ToTable("Inventories", (string)null);
+                    b.ToTable("Inventories");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.Product", b =>
@@ -335,7 +335,7 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.ProductAudit", b =>
@@ -372,7 +372,7 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductAudits", (string)null);
+                    b.ToTable("ProductAudits");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.ProductProfit", b =>
@@ -410,7 +410,7 @@ namespace MyApp.Infrastructure.Migrations
                     b.HasIndex("ProductId")
                         .IsUnique();
 
-                    b.ToTable("ProductProfits", (string)null);
+                    b.ToTable("ProductProfits");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.ProductPurchese", b =>
@@ -433,7 +433,7 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductPurcheses", (string)null);
+                    b.ToTable("ProductPurcheses");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.Purchase", b =>
@@ -467,7 +467,7 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Purchases", (string)null);
+                    b.ToTable("Purchases");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.UserPermission", b =>
@@ -487,7 +487,7 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserPermission", (string)null);
+                    b.ToTable("UserPermission");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
