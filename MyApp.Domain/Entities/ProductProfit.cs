@@ -17,19 +17,13 @@ public class ProductProfit
     public decimal SellingPrice { get; set; }
     public decimal ProfitMargin { get; set; }
     
-    // Sales tracking
-    public int TotalUnitsSold { get; set; }
-    public decimal TotalRevenue { get; set; }
-    public decimal TotalCost { get; set; }
-    public decimal TotalProfit { get; set; }
-    
-    // Time period tracking
-    public DateTime PeriodStart { get; set; }
-    public DateTime PeriodEnd { get; set; }
-    
     // Timestamps
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
+    
+    // Soft delete
+    public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
     
     // Calculate profit percentage
     public decimal ProfitPercentage => SellingPrice > 0 ? (ProfitMargin / SellingPrice) * 100 : 0;
