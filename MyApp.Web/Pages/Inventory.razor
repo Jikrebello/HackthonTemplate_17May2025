@@ -2,7 +2,7 @@
 
 @using Microsoft.FluentUI.AspNetCore.Components
 @using Microsoft.FluentUI.AspNetCore.Components.DataGrid
-@using MyApp.Web.DTOs.Inventory
+@using MyApp.Web.DTOs
 @using Microsoft.AspNetCore.Components.Authorization
 @inject HttpClient Http
 @inject IJSRuntime Js
@@ -24,27 +24,57 @@
         </AuthorizeView>
     </div>
 
-    <FluentDataGrid Items="@_items.AsQueryable()" Sortable Filterable ResizableColumns AutoFit>
-        <PropertyColumn Title="ID" Width="50px" Property="@( i => i.Id )"/>
-        <PropertyColumn Title="Name" Property="@( i => i.Name )"/>
-        <PropertyColumn Title="Quantity" Width="100px" Property="@( i => i.Quantity )"/>
+    <FluentDataGrid Items="@_items.AsQueryable()"
+                    Sortable
+                    Filterable
+                    ResizableColumns
+                    AutoFit>
 
-        <TemplateColumn Title="Actions" Width="150px" Context="item">
-            <AuthorizeView Roles="Admin,Manager">
-                <Authorized>
-                    <FluentButton Appearance="Appearance.Stealth"
-                                  Title="Edit"
-                                  OnClick="@( () => ShowEditDialog(item) )"
-                                  IconStart="@( new Icons.Regular.Size16.Edit() )"/>
+        <!-- wrap all your columns in the ChildContent fragment -->
+        <ChildContent>
+            <PropertyColumn Title="ID"
+                            Width="50px"
+                            Property="@( i => i.Id )" />
 
-                    <FluentButton Appearance="Appearance.Stealth"
-                                  Title="Delete"
-                                  OnClick="@( () => ConfirmDelete(item.Id) )"
-                                  IconStart="@( new Icons.Regular.Size16.Delete() )"/>
-                </Authorized>
-            </AuthorizeView>
-        </TemplateColumn>
+            <PropertyColumn Title="Name"
+                            Property="@( i => i.Name )" />
+
+            <PropertyColumn Title="Quantity"
+                            Width="100px"
+                            Property="@( i => i.Quantity )" />
+
+            <TemplateColumn Title="Actions"
+                            Width="150px"
+                            Context="item">
+                <AuthorizeView Roles="Admin,Manager">
+                    <Authorized>
+                        <FluentButton Appearance="Appearance.Stealth"
+                                      Title="Edit"
+                                      OnClick="@( () => ShowEditDialog(item) )"
+                                      IconStart="@( new Icons.Regular.Size16.Edit() )" />
+
+                        <FluentButton Appearance="Appearance.Stealth"
+                                      Title="Delete"
+                                      OnClick="@( () => ConfirmDelete(item.Id) )"
+                                      IconStart="@( new Icons.Regular.Size16.Delete() )" />
+                    </Authorized>
+                </AuthorizeView>
+            </TemplateColumn>
+        </ChildContent>
+
+        <!-- this renders only when _items is empty -->
+        <EmptyContent>
+            <div style="text-align:center; padding:1rem;">
+                <p>No items found—try adding some!</p>
+                <FluentButton Appearance="Appearance.Neutral"
+                              OnClick="ShowAddDialog">
+                    Add Item
+                </FluentButton>
+            </div>
+        </EmptyContent>
+
     </FluentDataGrid>
+
 
     <FluentDialog @bind-Hidden="_isDialogHidden">
         <FluentDialogHeader>
@@ -75,20 +105,21 @@
 </CascadingAuthenticationState>
 
 @code {
-    private List<InventoryItemDto> _items = [ ];
-    private InventoryItemDto _currentItem = new();
+    private List<ProductDto> _items = [ ];
+    private ProductDto _currentItem = new();
     private bool _isDialogHidden = true;
     private bool _editMode;
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.Delay(200); // mock API latency
-        _items =
-        [
-            new InventoryItemDto { Id = 1, Name = "AA Batteries (Pack of 4)", Quantity = 23 },
-            new InventoryItemDto { Id = 2, Name = "USB-C Cable", Quantity = 42 },
-            new InventoryItemDto { Id = 3, Name = "Wireless Mouse", Quantity = 15 },
-        ];
+        await Refresh();
+    }
+
+    private async Task Refresh()
+    {
+        var results = await Http.GetFromJsonAsync<List<ProductDto>>("api/Product");
+        _items = await Http.GetFromJsonAsync<List<ProductDto>>("api/Product") ?? [ ];
+        StateHasChanged();
     }
 
     private void ShowAddDialog()
@@ -98,7 +129,7 @@
         _isDialogHidden = false;
     }
 
-    private void ShowEditDialog( InventoryItemDto item )
+    private void ShowEditDialog( ProductDto item )
     {
         _currentItem = new() { Id = item.Id, Name = item.Name, Quantity = item.Quantity };
         _editMode = true;
@@ -107,7 +138,7 @@
 
     private void CloseDialog() => _isDialogHidden = true;
 
-    private void SaveItem()
+    private async Task SaveItem()
     {
         if ( _editMode )
         {
@@ -117,14 +148,29 @@
         }
         else
         {
-            _currentItem.Id = _items.Any() ? _items.Max(i => i.Id) + 1 : 1;
-            _items.Add(_currentItem);
+            var res = await Http.PostAsJsonAsync(
+                "api/Product", new
+                {
+                    name = _currentItem.Name,
+                    description = _currentItem.Description,
+                    price = _currentItem.Price,
+                    quantity = _currentItem.Quantity,
+                    categoryId = _currentItem.CategoryId
+                }
+            );
+            res.EnsureSuccessStatusCode();
+
+            var created = await res.Content.ReadFromJsonAsync<ProductDto>();
+            if ( created == null )
+                throw new Exception("Failed to create item");
+
+            _items.Add(created);
         }
 
         _isDialogHidden = true;
     }
 
-    private async Task ConfirmDelete( int id )
+    private async Task ConfirmDelete( Guid id )
     {
         if ( await Js.InvokeAsync<bool>("confirm", $"Delete item #{id}?") )
             _items.RemoveAll(i => i.Id == id);
