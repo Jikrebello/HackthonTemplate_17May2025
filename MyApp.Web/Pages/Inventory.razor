@@ -10,19 +10,14 @@
 
 <PageTitle>Inventory Management</PageTitle>
 
-<CascadingAuthenticationState>
     <div class="page-header">
         <h2>Inventory</h2>
 
-        <AuthorizeView Roles="User">
-            <Authorized>
-                <FluentButton Appearance="Appearance.Accent"
-                              OnClick="ShowAddDialog"
-                              IconStart="@( new Icons.Regular.Size16.Add() )">
-                    Add&nbsp;Item
-                </FluentButton>
-            </Authorized>
-        </AuthorizeView>
+        <FluentButton Appearance="Appearance.Accent"
+                      OnClick="ShowAddDialog"
+                      IconStart="@( new Icons.Regular.Size16.Add() )">
+            Add&nbsp;Item
+        </FluentButton>
     </div>
 
     <FluentDataGrid Items="@_items.AsQueryable()"
@@ -87,9 +82,16 @@
                              @bind-Value="_currentItem.Name"
                              Placeholder="Enter item name"/>
 
+            <FluentTextField Label="Description"
+                             @bind-Value="_currentItem.Description"
+                             Placeholder="Enter item description"/>
+
             <FluentNumberField Label="Quantity"
                                Min="0"
                                @bind-Value="_currentItem.Quantity"/>
+
+            <FluentNumberField Label="Price" @bind-Value="_currentItem.Price" TValue="decimal" Step="0.1" type="number" />
+
         </FluentDialogBody>
 
         <FluentDialogFooter>
@@ -103,7 +105,6 @@
             </FluentButton>
         </FluentDialogFooter>
     </FluentDialog>
-</CascadingAuthenticationState>
 
 @code {
     private List<ProductDto> _items = [ ];

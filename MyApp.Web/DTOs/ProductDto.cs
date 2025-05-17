@@ -11,5 +11,5 @@ public record ProductDto
     public DateTime UpdatedAt;
     public bool IsDeleted;
     public DateTime? DeletedAt;
-    public Guid CategoryId;
+    public Guid CategoryId = Guid.NewGuid();
 }
