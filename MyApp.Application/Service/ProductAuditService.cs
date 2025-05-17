@@ -86,6 +86,7 @@ public class ProductAuditService : IProductAuditService
         await TrackFieldChangeAsync(oldProduct.Id, "Name", oldProduct.Name, newProduct.Name, userId, notes);
         await TrackFieldChangeAsync(oldProduct.Id, "Description", oldProduct.Description, newProduct.Description, userId, notes);
         await TrackFieldChangeAsync(oldProduct.Id, "Price", oldProduct.Price.ToString(), newProduct.Price.ToString(), userId, notes);
+        await TrackFieldChangeAsync(oldProduct.Id, "Barcode", oldProduct.Barcode, newProduct.Barcode, userId, notes);
         await TrackFieldChangeAsync(oldProduct.Id, "CategoryId", oldProduct.CategoryId.ToString(), newProduct.CategoryId.ToString(), userId, notes);
         
         // Track changes to inventory if it exists
