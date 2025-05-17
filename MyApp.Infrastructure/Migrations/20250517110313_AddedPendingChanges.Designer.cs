@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyApp.Infrastructure.Persistence;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyApp.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250517110313_AddedPendingChanges")]
+    partial class AddedPendingChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -251,7 +254,7 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.Inventory", b =>
@@ -289,7 +292,7 @@ namespace MyApp.Infrastructure.Migrations
                     b.HasIndex("ProductId")
                         .IsUnique();
 
-                    b.ToTable("Inventories", (string)null);
+                    b.ToTable("Inventories");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.Product", b =>
@@ -335,7 +338,7 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.ProductAudit", b =>
@@ -372,7 +375,7 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductAudits", (string)null);
+                    b.ToTable("ProductAudits");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.ProductProfit", b =>
@@ -410,7 +413,7 @@ namespace MyApp.Infrastructure.Migrations
                     b.HasIndex("ProductId")
                         .IsUnique();
 
-                    b.ToTable("ProductProfits", (string)null);
+                    b.ToTable("ProductProfits");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.ProductPurchese", b =>
@@ -433,7 +436,7 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProductPurcheses", (string)null);
+                    b.ToTable("ProductPurcheses");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.Purchase", b =>
@@ -467,7 +470,7 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Purchases", (string)null);
+                    b.ToTable("Purchases");
                 });
 
             modelBuilder.Entity("MyApp.Domain.Entities.UserPermission", b =>
@@ -487,7 +490,7 @@ namespace MyApp.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserPermission", (string)null);
+                    b.ToTable("UserPermission");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

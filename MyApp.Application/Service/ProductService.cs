@@ -26,6 +26,7 @@ public class ProductService : IProductService
             Description = request.Description,
             Price = request.Price,
             Quantity = request.Quantity,
+            Barcode = request.Barcode,
             CategoryId = request.CategoryId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -39,7 +40,7 @@ public class ProductService : IProductService
             ProductId = product.Id,
             Action = "Create",
             FieldName = "All",
-            NewValue = $"Name: {product.Name}, Price: {product.Price}, Quantity: {product.Quantity}"
+            NewValue = $"Name: {product.Name}, Price: {product.Price}, Quantity: {product.Quantity}, Barcode: {product.Barcode}"
         });
     
         return MapToResponse(product);
@@ -94,7 +95,7 @@ public class ProductService : IProductService
                 ProductId = id,
                 Action = "Delete",
                 FieldName = "All",
-                OldValue = $"Name: {product.Name}, Price: {product.Price}, Quantity: {product.Quantity}"
+                OldValue = $"Name: {product.Name}, Price: {product.Price}, Quantity: {product.Quantity}, Barcode: {product.Barcode}"
             });
         }
         
@@ -122,12 +123,14 @@ public class ProductService : IProductService
             Description = existingProduct.Description,
             Price = existingProduct.Price,
             Quantity = existingProduct.Quantity,
+            Barcode = existingProduct.Barcode,
             CategoryId = existingProduct.CategoryId
         };
             
         existingProduct.Name = request.Name;
         existingProduct.Description = request.Description;
         existingProduct.Price = request.Price;
+        existingProduct.Barcode = request.Barcode;
         // existingProduct.Quantity = request.Quantity;
         // existingProduct.CategoryId = request.CategoryId;
         existingProduct.UpdatedAt = DateTime.UtcNow;
@@ -149,6 +152,7 @@ public class ProductService : IProductService
             Description = product.Description,
             Price = product.Price,
             Quantity = product.Quantity,
+            Barcode = product.Barcode,
             CategoryId = product.CategoryId,
             CreatedAt = product.CreatedAt,
             UpdatedAt = product.UpdatedAt
@@ -164,6 +168,7 @@ public class ProductService : IProductService
             Description = product.Description,
             Price = product.Price,
             Quantity = product.Quantity,
+            Barcode = product.Barcode,
             CategoryId = product.CategoryId,
             CreatedAt = product.CreatedAt,
             UpdatedAt = product.UpdatedAt

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -11,18 +11,8 @@ namespace MyApp.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<Guid>(
-                name: "CategoryId",
-                table: "Products",
-                type: "uuid",
-                nullable: true);
-
-            migrationBuilder.AddColumn<int>(
-                name: "Quantity",
-                table: "Products",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0);
+            // Removed CategoryId column addition since it already exists
+            // Removed Quantity column addition since it already exists
 
             migrationBuilder.AddColumn<string>(
                 name: "FirstName",
@@ -69,13 +59,8 @@ namespace MyApp.Infrastructure.Migrations
             migrationBuilder.DropTable(
                 name: "UserPermissions");
 
-            migrationBuilder.DropColumn(
-                name: "CategoryId",
-                table: "Products");
-
-            migrationBuilder.DropColumn(
-                name: "Quantity",
-                table: "Products");
+            // Removed CategoryId column removal since we didn't add it
+            // Removed Quantity column removal since we didn't add it
 
             migrationBuilder.DropColumn(
                 name: "FirstName",
