@@ -12,6 +12,7 @@ public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
     public DbSet<Purchase> Purchases { get; set; } = null!;
     public DbSet<Inventory> Inventories { get; set; } = null!;
     public DbSet<ProductProfit> ProductProfits { get; set; } = null!;
+    public DbSet<ProductPurchese> ProductPurcheses { get; set; } = null!;
     
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
@@ -22,6 +23,22 @@ public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
         
         builder.Entity<Product>()
             .HasKey(p => p.Id);
+        
+        builder.Entity<Category>()
+            .HasKey(c => c.Id);
+        
+        builder.Entity<Purchase>()
+            .HasKey(p => p.Id);
+        
+        builder.Entity<Inventory>()
+            .HasKey(i => i.Id);
+        
+        builder.Entity<ProductProfit>()
+            .HasKey(pp => pp.Id);
+        
+        builder.Entity<ProductPurchese>()
+            .HasKey(pp => pp.Id);
+        
             
         builder.Entity<Product>()
             .HasOne(p => p.Inventory)
@@ -32,16 +49,6 @@ public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
             .HasOne(p => p.ProductProfit)
             .WithOne(pp => pp.Product)
             .HasForeignKey<ProductProfit>(pp => pp.ProductId);
-            
-        builder.Entity<Product>()
-            .HasMany(p => p.Purchases)
-            .WithOne(pu => pu.Product)
-            .HasForeignKey(pu => pu.ProductId);
-            
-        builder.Entity<Purchase>()
-            .HasOne(pu => pu.User)
-            .WithMany()
-            .HasForeignKey(pu => pu.UserId);
 
         builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }

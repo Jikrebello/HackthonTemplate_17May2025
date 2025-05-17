@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MyApp.Application;
 using MyApp.Application.Interfaces.Repositories;
 using MyApp.Application.Interfaces.Services;
+using MyApp.Application.Service;
 using MyApp.Application.Services;
 using MyApp.Domain.Entities;
 using MyApp.Infrastructure.Persistence;
@@ -38,11 +39,13 @@ public static class DependencyInjection
         // Register repositories
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<IPurchaseRepository, PurchaseRepository>();
 
         // Register services
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<IPurchaseService, PurchaseService>();
 
         return services;
     }
