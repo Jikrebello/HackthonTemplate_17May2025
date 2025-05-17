@@ -40,12 +40,14 @@ public static class DependencyInjection
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IPurchaseRepository, PurchaseRepository>();
+        services.AddScoped<IProductAuditRepository, ProductAuditRepository>();
 
         // Register services
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<IPurchaseService, PurchaseService>();
+        services.AddScoped<IProductAuditService, ProductAuditService>();
 
         return services;
     }
