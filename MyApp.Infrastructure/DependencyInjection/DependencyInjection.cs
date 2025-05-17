@@ -2,13 +2,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MyApp.Application.Interfaces.Persistence;
+using MyApp.Application.Interfaces.Repositories;
 using MyApp.Application.Interfaces.Services;
 using MyApp.Application.Services;
 using MyApp.Domain.Entities;
 using MyApp.Infrastructure.Persistence;
+using MyApp.Infrastructure.Repos;
 
-namespace MyApp.Infrastructure;
+namespace MyApp.Infrastructure.DependencyInjection;
 
 public static class DependencyInjection
 {
@@ -20,7 +21,6 @@ public static class DependencyInjection
         var connectionString = config.GetConnectionString("DefaultConnection");
 
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
-        services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
         services
             .AddIdentity<AppUser, IdentityRole<Guid>>(options =>
@@ -34,6 +34,10 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
+        // Register repositories
+        services.AddScoped<IProductRepository, ProductRepository>();
+
+        // Register services
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProductService, ProductService>();
 

@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
-using MyApp.Infrastructure;
+using Microsoft.AspNetCore.Identity;
+using MyApp.Infrastructure.DependencyInjection;
 using MyApp.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
