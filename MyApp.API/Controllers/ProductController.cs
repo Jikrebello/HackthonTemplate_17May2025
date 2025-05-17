@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyApp.Application.Interfaces.Services;
 using MyApp.Common.DTOs.Product;
@@ -15,15 +16,15 @@ public class ProductController : ControllerBase
         _productService = productService;
     }
 
-    [HttpPost]
-    public async Task<IActionResult> CreateProduct([FromBody] CreateProductRequest request)
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<ProductResponse>>> GetAllProducts()
     {
-        var response = await _productService.CreateProductAsync(request);
-        return CreatedAtAction(nameof(GetProductById), new { id = response.Id }, response);
+        var products = await _productService.GetAllProductsAsync();
+        return Ok(products);
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetProductById(Guid id)
+    public async Task<ActionResult<ProductResponse>> GetProductById(Guid id)
     {
         var product = await _productService.GetProductByIdAsync(id);
         
@@ -33,10 +34,13 @@ public class ProductController : ControllerBase
         return Ok(product);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetAllProducts()
+    [HttpPost]
+    public async Task<ActionResult<ProductResponse>> CreateProduct(CreateProductRequest request)
     {
-        var products = await _productService.GetAllProductsAsync();
-        return Ok(products);
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+            
+        var product = await _productService.CreateProductAsync(request);
+        return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
     }
 }

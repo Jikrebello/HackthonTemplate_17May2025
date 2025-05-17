@@ -1,18 +1,17 @@
 using MyApp.Application.Interfaces.Services;
-using MyApp.Application.Interfaces.Persistence;
+using MyApp.Application.Interfaces.Repositories;
 using MyApp.Common.DTOs.Product;
 using MyApp.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace MyApp.Application.Services;
 
 public class ProductService : IProductService
 {
-    private readonly IAppDbContext _context;
+    private readonly IProductRepository _productRepository;
     
-    public ProductService(IAppDbContext context)
+    public ProductService(IProductRepository productRepository)
     {
-        _context = context;
+        _productRepository = productRepository;
     }
     
     public async Task<ProductResponse> CreateProductAsync(CreateProductRequest request)
@@ -27,21 +26,20 @@ public class ProductService : IProductService
             UpdatedAt = DateTime.UtcNow
         };
     
-        await _context.Products.AddAsync(product);
-        await _context.SaveChangesAsync();
+        await _productRepository.CreateAsync(product);
     
         return MapToResponse(product);
     }
     
     public async Task<ProductResponse?> GetProductByIdAsync(Guid id)
     {
-        var product = await _context.Products.FindAsync(id);
+        var product = await _productRepository.GetByIdAsync(id);
         return product != null ? MapToResponse(product) : null;
     }
     
     public async Task<IEnumerable<ProductResponse>> GetAllProductsAsync()
     {
-        var products = await _context.Products.ToListAsync();
+        var products = await _productRepository.GetAllAsync();
         return products.Select(MapToResponse);
     }
     
