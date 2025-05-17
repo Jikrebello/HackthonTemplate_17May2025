@@ -1,5 +1,7 @@
 ﻿@page "/weather"
 @inject HttpClient Http
+@attribute [Authorize]
+
 
 <PageTitle>Weather</PageTitle>
 
@@ -21,7 +23,8 @@ else
     </FluentDataGrid>
 }
 
-@code {
+@code
+{
     private IQueryable<WeatherForecast>? forecasts;
 
     protected override async Task OnInitializedAsync()

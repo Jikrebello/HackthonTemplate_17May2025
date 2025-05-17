@@ -1,16 +1,40 @@
 ﻿@page "/login"
 @using Blazored.LocalStorage
+@using Microsoft.AspNetCore.Components.Authorization
 @inject HttpClient Http
 @inject NavigationManager Nav
 @inject ILocalStorageService LocalStorage
+@inject AuthenticationStateProvider AuthProvider
 
 
-<h3>Login</h3>
 
-<FluentTextField @bind-Value="loginModel.UsernameOrEmail" Placeholder="Username or Email" />
-<FluentTextField @bind-Value="loginModel.Password" Placeholder="Password" Type="password" />
+<FluentStack HorizontalAlignment="HorizontalAlignment.Center"
+             VerticalAlignment="VerticalAlignment.Center"
+             VerticalGap="10"
+             Orientation="Orientation.Vertical"
+             Style="margin-top: 5rem; width: 100%; text-align: center;">
 
-<FluentButton Appearance="Appearance.Accent" OnClick="LoginAsync">Login</FluentButton>
+
+    <h3 style="margin-bottom: 1rem;">Login</h3>
+
+    <FluentTextField @bind-Value="loginModel.UsernameOrEmail"
+                     Placeholder="Username or Email"
+                     Style="width: 300px;" />
+
+    <FluentTextField @bind-Value="loginModel.Password"
+                     Placeholder="Password"
+                     Type="password"
+                     Style="width: 300px;" />
+
+    <FluentButton Appearance="Appearance.Accent"
+                  OnClick="LoginAsync"
+                  Style="width: 300px;">
+        Login
+    </FluentButton>
+</FluentStack>
+
+
+
 
 @if (!string.IsNullOrEmpty(error))
 {
@@ -30,17 +54,22 @@
         {
             var response = await Http.PostAsJsonAsync("https://localhost:7015/api/auth/login", loginModel);
 
-
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
                 if (result is not null)
                 {
                     await LocalStorage.SetItemAsync("authToken", result.Token);
+
+                    // 🔥 Notify the AuthProvider
+                    if (AuthProvider is CustomAuthStateProvider customProvider)
+                    {
+                        customProvider.NotifyUserAuthentication(result.Token);
+                    }
+
                     Nav.NavigateTo("/");
                 }
             }
-
             else
             {
                 error = "Invalid login credentials.";
@@ -51,6 +80,7 @@
             error = $"Something went wrong: {ex.Message}";
         }
     }
+
 
     public class LoginRequest
     {
