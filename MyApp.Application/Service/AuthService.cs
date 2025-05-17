@@ -1,13 +1,15 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using MyApp.Common.Constants;
+using MyApp.Application.Interfaces.Services;
 using MyApp.Common.DTOs.Auth;
 using MyApp.Domain.Entities;
 
-namespace MyApp.Application;
+namespace MyApp.Application.Services;
 
 public class AuthService : IAuthService
 {
@@ -65,7 +67,19 @@ public class AuthService : IAuthService
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.UniqueName, user.UserName ?? ""),
             new(ClaimTypes.Role, roles.FirstOrDefault() ?? "User"),
+            new(ClaimTypes.GivenName, user.FirstName),
+            new(ClaimTypes.Surname, user.LastName),
         };
+        
+        // Add permissions as claims
+        foreach (var permission in user.Permissions)
+        {
+            // Try to parse the permission name to our enum
+            if (Enum.TryParse<Permission>(permission.PermissionName, out var permissionEnum))
+            {
+                claims.Add(new Claim("permission", permissionEnum.ToString()));
+            }
+        }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

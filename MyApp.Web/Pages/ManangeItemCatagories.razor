@@ -3,8 +3,40 @@
 @inject HttpClient Http
 @inject NavigationManager Nav
 @inject ILocalStorageService LocalStorage
-
+@attribute [Authorize]
 <h3>Manage Item Categories</h3>
+
+<FluentDialog @bind-Hidden="_isDialogHidden">
+    <FluentDialogHeader>
+        @(_editMode ? "Edit Item" : "Add New Item")
+    </FluentDialogHeader>
+
+    <FluentDialogBody>
+        <FluentTextField Label="Name"
+                         @bind-Value="editOrAdd!.name"
+                         Placeholder="Enter item name" />
+
+        <FluentTextField Label="Description"
+                         Placeholder="Enter item Description"
+                         @bind-Value="editOrAdd.description" />
+        <FluentCheckbox Label="Defalut"
+                        @bind-Value="editOrAdd.isDefault" />
+    </FluentDialogBody>
+
+
+
+    <FluentDialogFooter>
+        <FluentButton Appearance="Appearance.Neutral"
+                      OnClick="CloseDialog">
+            Cancel
+        </FluentButton>
+
+        <FluentButton Appearance="Appearance.Accent"
+                      OnClick="SaveItem">
+            @(_editMode ? "Update" : "Create")
+        </FluentButton>
+    </FluentDialogFooter>
+</FluentDialog>
 
 <div class="d-flex justify-content-between align-items-start">
     <div class="flex-grow-1">
@@ -22,15 +54,15 @@
                     var category = ItemCategories[i];
                     var rowClass = i % 2 == 0 ? "even-row" : "odd-row";
                     <tr class="@rowClass @(SelectedCategory == category ? "table-active" : "")"
-                        @onclick="() => SelectCategory(category)"
-                        style="cursor:pointer;">
+                    @onclick="() => SelectCategory(category)"
+                    style="cursor:pointer;">
                         <td class="align-middle text-center" @onclick:stopPropagation>
                             <input type="checkbox"
-                                   checked="@category.IsDefault"
-                                   @onchange="() => SetDefaultCategory(category)" />
+                            checked="@category.isDefault"
+                            @onchange="() => SetDefaultCategory(category)" />
                         </td>
-                        <td class="align-middle">@category.Name</td>
-                        <td class="align-middle">@category.Description</td>
+                        <td class="align-middle">@category.name</td>
+                        <td class="align-middle">@category.description</td>
                     </tr>
                 }
             </tbody>
@@ -38,7 +70,7 @@
     </div>
     <div class="ms-4" style="min-width: 220px; position: fixed; right: 60px; top: 120px;">
         <div class="d-flex flex-column align-items-stretch gap-3">
-            <button class="btn btn-primary custom-btn btn-lg py-4" @onclick="AddCategory">Add Item Category</button><br />
+            <button class="btn btn-primary custom-btn btn-lg py-4" @onclick="ShowDialog">Add Item Category</button><br />
             <button class="btn btn-secondary custom-btn btn-lg py-4" @onclick="EditCategory" disabled="@(!IsItemSelected)">Edit Item Category</button><br />
             <button class="btn btn-danger custom-btn btn-lg py-4" @onclick="DeleteCategory" disabled="@(!IsItemSelected)">Delete Item Category</button>
         </div>
@@ -46,71 +78,103 @@
 
     <style>
         .custom-btn {
-            min-width: 220px;
-            min-height: 56px;
-            font-size: 1.15rem;
-            font-weight: 500;
-            margin-bottom: 0 !important;
+        min-width: 220px;
+        min-height: 56px;
+        font-size: 1.15rem;
+        font-weight: 500;
+        margin-bottom: 0 !important;
         }
 
         .d-flex.flex-column.gap-3 > .custom-btn:not(:last-child) {
-            margin-bottom: 1rem !important;
+        margin-bottom: 1rem !important;
         }
     </style>
 </div>
 
 <style>
     .custom-table {
-        min-width: 700px;
-        font-size: 1.1rem;
-        border-collapse: separate;
-        border-spacing: 0;
-        background-color: #fff;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    min-width: 700px;
+    font-size: 1.1rem;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
-        .custom-table th, .custom-table td {
-            border: 1px solid #dee2e6 !important;
-            padding: 1rem 1.25rem;
-        }
+    .custom-table th, .custom-table td {
+    border: 1px solid #dee2e6 !important;
+    padding: 1rem 1.25rem;
+    }
 
-        .custom-table thead th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            text-align: left;
-        }
+    .custom-table thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-align: left;
+    }
 
-        .custom-table tbody tr:hover {
-            background-color: #f1f3f5;
-        }
+    .custom-table tbody tr:hover {
+    background-color: #f1f3f5;
+    }
 
-        .custom-table .even-row {
-            background-color: #ffffff;
-        }
+    .custom-table .even-row {
+    background-color: #ffffff;
+    }
 
-        .custom-table .odd-row {
-            background-color: #f6f8fa;
-        }
+    .custom-table .odd-row {
+    background-color: #f6f8fa;
+    }
 
     .table-active {
-        background-color: #e2e6ea !important;
+    background-color: #e2e6ea !important;
     }
 </style>
 
-@code
-{
+@code {
+    private bool _isDialogHidden = true;
     private List<ItemCategory> ItemCategories = new();
     private ItemCategory? SelectedCategory;
+    private ItemCategory editOrAdd = new();
+    private bool _editMode = false;
+
+    private void ShowDialog()
+    {
+        _isDialogHidden = false;
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        // TODO: Load categories from API or local storage
-        // Example data for now
-        ItemCategories = new List<ItemCategory>
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:7015/api/Category");
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var response = await Http.SendAsync(request);
+        if (response.IsSuccessStatusCode)
         {
-            new ItemCategory { Id = 1, Name = "Electronics", Description = "Electronic items" },
-            new ItemCategory { Id = 2, Name = "Books", Description = "All kinds of books" }
-        };
+            var json = await response.Content.ReadAsStringAsync();
+            ItemCategories = System.Text.Json.JsonSerializer.Deserialize<List<ItemCategory>>(json) ?? new List<ItemCategory>();
+        }
+        else
+        {
+            ItemCategories = new List<ItemCategory>();
+        }
+    }
+
+    private void CloseDialog()
+    {
+        _isDialogHidden = true;
+    }
+
+    private async void SaveItem()
+    {
+        if (_editMode)
+        {
+            SelectedCategory = editOrAdd;
+            await EditCategory();
+        }
+        else
+        {
+            await AddCategory();
+        }
+        CloseDialog();
     }
 
     private bool IsItemSelected => SelectedCategory != null;
@@ -126,19 +190,43 @@
     private void SetDefaultCategory(ItemCategory category)
     {
         foreach (var cat in ItemCategories)
-            cat.IsDefault = false;
-        category.IsDefault = true;
+            cat.isDefault = false;
+        category.isDefault = true;
     }
 
-    private void AddCategory()
+    private async Task AddCategory()
     {
-        // TODO: Implement add logic (e.g., show modal dialog)
+
+        // Add to local list for immediate UI feedback
+        ItemCategories.Add(editOrAdd);
+
+        // Prepare and send to API
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        var json = System.Text.Json.JsonSerializer.Serialize(editOrAdd);
+        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(HttpMethod.Post, "https://localhost:7015/api/Category")
+            {
+                Content = content
+            };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var response = await Http.SendAsync(request);
+
+        // Optionally, handle response (e.g., update Id from server)
+        StateHasChanged();
     }
 
-    private void EditCategory()
+    private async Task EditCategory()
     {
-        if (SelectedCategory == null) return;
-        // TODO: Implement edit logic (e.g., show modal dialog)
+        // Prepare and send to API
+        var token = await LocalStorage.GetItemAsync<string>("authToken");
+        var json = System.Text.Json.JsonSerializer.Serialize(editOrAdd);
+        var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(
+            HttpMethod.Put, 
+            $"https://localhost:7015/api/Category?id:{editOrAdd.id}")
+        {
+            Content = content
+        };
     }
 
     private void DeleteCategory()
@@ -149,9 +237,9 @@
 
     public class ItemCategory
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public bool IsDefault { get; set; } // Added for default tracking
+        public Guid id { get; set; }
+        public string name { get; set; } = string.Empty;
+        public string description { get; set; } = string.Empty;
+        public bool isDefault { get; set; } // Added for default tracking
     }
 }

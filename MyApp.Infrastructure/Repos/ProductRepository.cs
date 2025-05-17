@@ -52,6 +52,13 @@ public class ProductRepository : IProductRepository
             .Where(p => p.Name.Contains(name))
             .ToListAsync();
     }
+    
+    public async Task<IEnumerable<Product>> GetByCategoryAsync(Guid categoryId)
+    {
+        return await _context.Products
+            .Where(p => p.CategoryId == categoryId)
+            .ToListAsync();
+    }
 
     public async Task<Product?> UpdateAsync(Product product)
     {
